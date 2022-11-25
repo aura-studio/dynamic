@@ -1,0 +1,19 @@
+[
+	{
+		"module": "github.com/hub-name/module-name",
+		"commit": "eafda1f2"
+	},
+	{
+		"gover": "1.18",
+		"module": "private.repo.com/hub-name/module-name",
+		"commit": "commit-hash-8-characters",
+		"packages": [
+			"relative",
+			"package/path",
+			"from",
+			"module/path"
+		],
+		"warehouse": "/opt/go-dynamic-warehouse",
+		"netrc": "machine private.repo.com login username-here password token-here"
+	}
+]
