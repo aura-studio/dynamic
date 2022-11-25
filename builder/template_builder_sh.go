@@ -1,10 +1,11 @@
-package main
+package builder
 
 func init() {
 	templateMap["{{.House}}/{{.Name}}_{{.Version}}/builder.sh"] = builderBash
 }
 
 const builderBash = `#!/bin/bash
+export GO111MODULE=on
 export GOPRIVATE={{.Module}}
 go mod tidy
 go build -o {{.House}}/{{.Name}}_{{.Version}}/libcgo_{{.Name}}_{{.Version}}.so -buildmode=c-shared {{.House}}/{{.Name}}_{{.Version}}/libcgo_{{.Name}}_{{.Version}}

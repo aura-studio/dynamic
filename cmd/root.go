@@ -1,4 +1,7 @@
-package main
+/*
+Copyright © 2022 NAME HERE <EMAIL ADDRESS>
+*/
+package cmd
 
 import (
 	"os"
@@ -18,9 +21,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	Run: func(cmd *cobra.Command, args []string) {
-		builder.build()
-	},
+	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -42,8 +43,4 @@ func init() {
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func main() {
-	Execute()
 }

@@ -1,4 +1,4 @@
-package main
+package builder
 
 func init() {
 	templateMap["{{.House}}/{{.Name}}_{{.Version}}/libgo_{{.Name}}_{{.Version}}/libgo.go"] = `package main
