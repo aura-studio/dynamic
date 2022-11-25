@@ -14,7 +14,7 @@ type Tunnel interface {
 }
 
 var (
-	warehouse = "/opt/go-dynamic-warehouse"
+	warehouse string
 	mu        sync.Mutex
 	tunnelMap = make(map[string]Tunnel)
 )
@@ -22,6 +22,8 @@ var (
 func init() {
 	if env, ok := os.LookupEnv("GO_DYNAMIC_WAREHOUSE"); ok {
 		warehouse = env
+	} else {
+		warehouse = "/opt/go-dynamic-warehouse"
 	}
 }
 
