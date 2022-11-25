@@ -54,7 +54,32 @@ func GetTunnel(name string) (Tunnel, error) {
 		return nil, fmt.Errorf("unexpected type from symbol Tunnel: %s", name)
 	}
 
+	tunnel.Init()
+
 	tunnelMap[name] = tunnel
 
 	return tunnel, nil
+}
+
+func CloseTunnel(name string) error {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if tunnel, ok := tunnelMap[name]; ok {
+		tunnel.Close()
+		delete(tunnelMap, name)
+	}
+
+	return nil
+}
+
+func RangeTunnel(f func(string, Tunnel) bool) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	for name, tunnel := range tunnelMap {
+		if !f(name, tunnel) {
+			break
+		}
+	}
 }
