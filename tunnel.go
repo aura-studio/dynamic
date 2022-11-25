@@ -83,3 +83,11 @@ func RangeTunnel(f func(string, Tunnel) bool) {
 		}
 	}
 }
+
+// RegisterTunnel is usually used in debug mode
+func RegisterTunnel(name string, tunnel Tunnel) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	tunnelMap[name] = tunnel
+}
