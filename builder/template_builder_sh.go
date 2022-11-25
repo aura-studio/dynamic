@@ -5,6 +5,7 @@ func init() {
 }
 
 const builderBash = `#!/bin/bash
+export CGO_ENABLED=1
 export GO111MODULE=on
 export GOPRIVATE={{.Module}}
 go mod tidy
