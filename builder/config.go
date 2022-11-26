@@ -17,7 +17,7 @@ type Config struct {
 	NetRC     string   `json:"netrc"`
 }
 
-var _defaultConfig = Config{
+var DefaultConfig = Config{
 	GoVer:     "1.18",
 	WareHouse: "/opt/go-dynamic-warehouse",
 }
@@ -29,11 +29,11 @@ func ParseRemote(remote string, packages ...string) []Config {
 	mod := strs[0]
 	commit := strs[1]
 	config := Config{
-		GoVer:     _defaultConfig.GoVer,
+		GoVer:     DefaultConfig.GoVer,
 		Module:    mod,
 		Commit:    commit,
 		Packages:  packages,
-		WareHouse: _defaultConfig.WareHouse,
+		WareHouse: DefaultConfig.WareHouse,
 		NetRC:     "",
 	}
 	return []Config{config}
@@ -59,10 +59,10 @@ func ParseJSON(str string) []Config {
 	}
 	for i := range configs {
 		if configs[i].GoVer == "" {
-			configs[i].GoVer = _defaultConfig.GoVer
+			configs[i].GoVer = DefaultConfig.GoVer
 		}
 		if configs[i].WareHouse == "" {
-			configs[i].WareHouse = _defaultConfig.WareHouse
+			configs[i].WareHouse = DefaultConfig.WareHouse
 		}
 	}
 	return configs
