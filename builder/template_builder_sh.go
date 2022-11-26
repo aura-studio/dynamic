@@ -4,7 +4,7 @@ func init() {
 	templateMap["{{.House}}/{{.Name}}_{{.Version}}/builder.sh"] = builderBash
 }
 
-const builderBash = `#!/bin/bash
+const builderBash = `#!/bin/sh
 export CGO_ENABLED=1
 export GO111MODULE=on
 export GOPRIVATE={{.Module}}

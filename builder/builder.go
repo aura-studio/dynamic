@@ -112,7 +112,7 @@ func (b *Builder) generate() {
 
 // runBuilder run ./builder.sh
 func (b *Builder) runBuilder() {
-	cmd := exec.Command("bash", "-c", "./builder.sh")
+	cmd := exec.Command("sh", "-c", "./builder.sh")
 	cmd.Dir = filepath.Join(b.config.House, b.config.Name+"_"+b.config.Version)
 	cmd.Env = append(os.Environ(), "USER="+b.user.Username, "HOME="+b.user.HomeDir)
 	cmd.Stdout = os.Stdout
