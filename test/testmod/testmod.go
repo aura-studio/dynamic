@@ -1,5 +1,7 @@
 package testmod
 
-func Display() string {
-	return "this is test mod v1.0.0"
+import "fmt"
+
+func Display() {
+	fmt.Println("this is test mod v2.0.0")
 }
