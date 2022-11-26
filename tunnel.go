@@ -89,5 +89,6 @@ func RegisterTunnel(name string, tunnel Tunnel) {
 	mu.Lock()
 	defer mu.Unlock()
 
+	tunnel.Init()
 	tunnelMap[name] = tunnel
 }
