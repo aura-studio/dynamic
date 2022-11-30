@@ -15,6 +15,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
+type Remote interface {
+	MustExists(name string)
+}
+
 type S3Config struct {
 	Region    string
 	Bucket    string
@@ -22,26 +26,15 @@ type S3Config struct {
 	SecretKey string
 }
 
-type Remote struct {
+type S3Remote struct {
 	*S3Config
 }
 
-func NewRemote(config *S3Config) *Remote {
-	return &Remote{config}
+func NewS3Remote(config *S3Config) *S3Remote {
+	return &S3Remote{config}
 }
 
-var (
-	remote = NewRemote(
-		&S3Config{
-			Region:    os.Getenv("S3_REGION"),
-			Bucket:    os.Getenv("S3_BUCKET"),
-			AccessKey: os.Getenv("S3_ACCESS_KEY"),
-			SecretKey: os.Getenv("S3_SECRET_KEY"),
-		},
-	)
-)
-
-func (r *Remote) createS3Session() (*session.Session, error) {
+func (r *S3Remote) createS3Session() (*session.Session, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(r.Region),
 		Credentials: credentials.NewStaticCredentials(r.AccessKey, r.SecretKey, ""),
@@ -53,7 +46,7 @@ func (r *Remote) createS3Session() (*session.Session, error) {
 	return sess, nil
 }
 
-func (r *Remote) downloadFileFromS3(remoteFilePath string, localFilePath string) error {
+func (r *S3Remote) downloadFileFromS3(remoteFilePath string, localFilePath string) error {
 	sess, err := r.createS3Session()
 	if err != nil {
 		log.Fatalf("failed to create s3 session, %v", err)
@@ -82,7 +75,7 @@ func (r *Remote) downloadFileFromS3(remoteFilePath string, localFilePath string)
 	return nil
 }
 
-func (r *Remote) batchDownloadFilesFromS3(name string) {
+func (r *S3Remote) batchDownloadFilesFromS3(name string) {
 	files := []string{
 		fmt.Sprintf("libcgo_%s.so", name),
 		fmt.Sprintf("libgo_%s.so", name),
@@ -122,11 +115,7 @@ func (r *Remote) batchDownloadFilesFromS3(name string) {
 	wg.Wait()
 }
 
-func MustExists(path string) {
-	remote.MustExists(path)
-}
-
-func (r *Remote) MustExists(name string) {
+func (r *S3Remote) MustExists(name string) {
 	dir := filepath.Join(warehouse, name)
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {

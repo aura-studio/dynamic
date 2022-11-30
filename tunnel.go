@@ -17,6 +17,7 @@ var (
 	warehouse string
 	mu        sync.Mutex
 	tunnelMap = make(map[string]Tunnel)
+	remote    Remote
 )
 
 func init() {
@@ -33,6 +34,10 @@ func GetTunnel(name string) (Tunnel, error) {
 
 	if tunnel, ok := tunnelMap[name]; ok {
 		return tunnel, nil
+	}
+
+	if remote != nil {
+		remote.MustExists(name)
 	}
 
 	var (
@@ -91,4 +96,11 @@ func RegisterTunnel(name string, tunnel Tunnel) {
 
 	tunnel.Init()
 	tunnelMap[name] = tunnel
+}
+
+func WithRemote(r Remote) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	remote = r
 }
