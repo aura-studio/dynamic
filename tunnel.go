@@ -13,6 +13,19 @@ type Tunnel interface {
 	Close()
 }
 
+type Template struct {
+}
+
+func (t *Template) Init() {
+}
+
+func (t *Template) Close() {
+}
+
+func (t *Template) Invoke(name string, args string) string {
+	return ""
+}
+
 var (
 	warehouse string
 	mu        sync.Mutex
@@ -49,14 +62,24 @@ func GetTunnel(name string) (Tunnel, error) {
 		return nil, err
 	}
 
-	symbol, err := plug.Lookup("Tunnel")
-	if err != nil {
-		return nil, err
-	}
+	var (
+		tunnel Tunnel
+		ok     bool
+	)
 
-	tunnel, ok := symbol.(Tunnel)
-	if !ok {
-		return nil, fmt.Errorf("unexpected type from symbol Tunnel: %s", name)
+	if symbol, err := plug.Lookup("Tunnel"); err == nil {
+		tunnel, ok = symbol.(Tunnel)
+		if !ok {
+			return nil, fmt.Errorf("unexpected type from symbol Tunnel: %s", name)
+		}
+	} else if symbol, err = plug.Lookup("New"); err == nil {
+		newFunc, ok := symbol.(func() Tunnel)
+		if !ok {
+			return nil, fmt.Errorf("unexpected type from symbol New: %s", name)
+		}
+		tunnel = newFunc()
+	} else {
+		return nil, err
 	}
 
 	tunnel.Init()
