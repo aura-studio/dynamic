@@ -25,19 +25,19 @@ var (
 )
 
 func init() {
-	path := os.Getenv("GO_DYNAMIC_REMOTE")
-	if path == "" {
+	if s, ok := os.LookupEnv("GO_DYNAMIC_REMOTE"); !ok {
 		return
-	}
-	u, err := url.Parse(path)
-	if err != nil {
-		log.Fatalf("parsing remote url error: %v", err)
-	}
-	switch u.Scheme {
-	case "s3":
-		remote = NewS3Remote(u.Host)
-	default:
-		log.Fatalf("unknown remote scheme: %s", u.Scheme)
+	} else {
+		u, err := url.Parse(s)
+		if err != nil {
+			log.Fatalf("parsing remote url error: %v", err)
+		}
+		switch u.Scheme {
+		case "s3":
+			remote = NewS3Remote(u.Host)
+		default:
+			log.Fatalf("unknown remote scheme: %s", u.Scheme)
+		}
 	}
 }
 
