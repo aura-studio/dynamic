@@ -5,11 +5,18 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Example",
+			"name": "Test",
 			"type": "go",
 			"request": "launch",
 			"mode": "debug",
-			"program": "${workspaceRoot}/main",
+			"program": "${workspaceRoot}/test",
+			"env": {
+				"GO_DYNAMIC_WAREHOUSE": "C:\\Users\\Administrator\\Documents\\Warehouse",
+				"GO_DYNAMIC_REMOTE": "s3://lambda",
+				"AWS_REGION": "us-west-1",
+				"AWS_SECRET_ACCESS_KEY": "******",
+				"AWS_ACCESS_KEY_ID": "******"
+			},
 		},
 	]
 }

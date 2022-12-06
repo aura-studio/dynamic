@@ -30,14 +30,13 @@ var (
 	warehouse string
 	mu        sync.Mutex
 	tunnelMap = make(map[string]Tunnel)
-	remote    Remote
 )
 
 func init() {
 	if env, ok := os.LookupEnv("GO_DYNAMIC_WAREHOUSE"); ok {
 		warehouse = env
 	} else {
-		warehouse = "/opt/go-dynamic-warehouse"
+		warehouse = "/tmp/warehouse"
 	}
 }
 
@@ -50,7 +49,7 @@ func GetTunnel(name string) (Tunnel, error) {
 	}
 
 	if remote != nil {
-		remote.MustExists(name)
+		remote.ExistsOrSync(name)
 	}
 
 	var (
@@ -119,11 +118,4 @@ func RegisterTunnel(name string, tunnel Tunnel) {
 
 	tunnel.Init()
 	tunnelMap[name] = tunnel
-}
-
-func WithRemote(r Remote) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	remote = r
 }
