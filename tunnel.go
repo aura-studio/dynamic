@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"plugin"
+	"runtime"
 	"sync"
 )
 
@@ -35,6 +36,8 @@ var (
 func init() {
 	if env, ok := os.LookupEnv("GO_DYNAMIC_WAREHOUSE"); ok {
 		warehouse = env
+	} else if runtime.GOOS == "windows" {
+		warehouse = "C:/warehouse"
 	} else {
 		warehouse = "/tmp/warehouse"
 	}
