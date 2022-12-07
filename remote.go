@@ -52,7 +52,7 @@ func NewS3Remote(bucket string) *S3Remote {
 }
 
 func (r *S3Remote) createS3Client() (*s3.Client, error) {
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.)
+	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client, %v", err)
 	}
