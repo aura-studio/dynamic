@@ -25,7 +25,7 @@ var (
 )
 
 func init() {
-	if s, ok := os.LookupEnv("GO_DYNAMIC_REMOTE"); !ok {
+	if s, ok := os.LookupEnv("DYNAMIC_REMOTE"); !ok {
 		return
 	} else {
 		u, err := url.Parse(s)
@@ -52,7 +52,7 @@ func NewS3Remote(bucket string) *S3Remote {
 }
 
 func (r *S3Remote) createS3Client() (*s3.Client, error) {
-	cfg, err := config.LoadDefaultConfig(context.Background())
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client, %v", err)
 	}

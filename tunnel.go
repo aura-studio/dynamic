@@ -34,7 +34,7 @@ var (
 )
 
 func init() {
-	if s, ok := os.LookupEnv("GO_DYNAMIC_LOCAL"); ok {
+	if s, ok := os.LookupEnv("DYNAMIC_LOCAL"); ok {
 		warehouse = s
 	} else if runtime.GOOS == "windows" {
 		warehouse = "C:/warehouse"
