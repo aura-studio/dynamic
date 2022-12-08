@@ -92,6 +92,7 @@ func (r *S3Remote) downloadFileFromS3(remoteFilePath string, localFilePath strin
 	return nil
 }
 
+// TODO: passing errors out, should not use fatal
 func (r *S3Remote) batchDownloadFilesFromS3(name string) {
 	files := []string{
 		fmt.Sprintf("libcgo_%s.so", name),
