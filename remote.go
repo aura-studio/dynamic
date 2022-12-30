@@ -92,14 +92,14 @@ func (r *S3Remote) downloadFileFromS3(remoteFilePath string, localFilePath strin
 	return nil
 }
 
-// TODO: passing errors out, should not use fatal
-func (r *S3Remote) batchDownloadFilesFromS3(name string) {
+func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 	files := []string{
 		fmt.Sprintf("libcgo_%s.so", name),
 		fmt.Sprintf("libgo_%s.so", name),
 	}
 
 	var wg sync.WaitGroup
+	var errChan = make(chan error, len(files))
 	for _, file := range files {
 		wg.Add(1)
 		go func(file string) {
@@ -112,18 +112,26 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) {
 				if os.IsNotExist(err) {
 					log.Printf("%s does not exist, downloading from s3[%s]...", localFilePath, remoteFilePath)
 					if err := r.downloadFileFromS3(remoteFilePath, localFilePath); err != nil {
-						log.Panicf("failed to download file from s3, %v", err)
+						log.Printf("failed to download file from s3, %v", err)
+						errChan <- err
+						return
 					}
 				} else {
-					log.Panicf("failed to stat file, %v", err)
+					log.Printf("failed to stat file, %v", err)
+					errChan <- err
+					return
 				}
 			} else if stat.Size() == 0 {
 				log.Printf("%s is empty, downloading from s3[%s]...", localFilePath, remoteFilePath)
 				if err := os.Remove(localFilePath); err != nil {
-					log.Panicf("failed to remove file, %v", err)
+					log.Printf("failed to remove file, %v", err)
+					errChan <- err
+					return
 				}
 				if err := r.downloadFileFromS3(remoteFilePath, localFilePath); err != nil {
-					log.Panicf("failed to download file from s3, %v", err)
+					log.Printf("failed to download file from s3, %v", err)
+					errChan <- err
+					return
 				}
 			} else {
 				log.Printf("%s is already exists", localFilePath)
@@ -131,6 +139,12 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) {
 		}(file)
 	}
 	wg.Wait()
+
+	if len(errChan) > 0 {
+		return fmt.Errorf("%d errors occurred during downloading", len(errChan))
+	}
+
+	return nil
 }
 
 func (r *S3Remote) ExistsOrSync(name string) {
@@ -146,6 +160,8 @@ func (r *S3Remote) ExistsOrSync(name string) {
 	}
 
 	startTime := time.Now()
-	r.batchDownloadFilesFromS3(name)
+	if err := r.batchDownloadFilesFromS3(name); err != nil {
+		log.Panicf("failed to download files from s3, %v", err)
+	}
 	log.Printf("download files from s3 took %v", time.Since(startTime))
 }
