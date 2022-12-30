@@ -30,13 +30,13 @@ func init() {
 	} else {
 		u, err := url.Parse(s)
 		if err != nil {
-			log.Fatalf("parsing remote url error: %v", err)
+			log.Panicf("parsing remote url error: %v", err)
 		}
 		switch u.Scheme {
 		case "s3":
 			remote = NewS3Remote(u.Host)
 		default:
-			log.Fatalf("unknown remote scheme: %s", u.Scheme)
+			log.Panicf("unknown remote scheme: %s", u.Scheme)
 		}
 	}
 }
@@ -63,7 +63,7 @@ func (r *S3Remote) createS3Client() (*s3.Client, error) {
 func (r *S3Remote) downloadFileFromS3(remoteFilePath string, localFilePath string) error {
 	client, err := r.createS3Client()
 	if err != nil {
-		log.Fatalf("failed to create s3 client, %v", err)
+		log.Panicf("failed to create s3 client, %v", err)
 	}
 
 	// Create a file to write the S3 Object contents to.
@@ -112,18 +112,18 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) {
 				if os.IsNotExist(err) {
 					log.Printf("%s does not exist, downloading from s3[%s]...", localFilePath, remoteFilePath)
 					if err := r.downloadFileFromS3(remoteFilePath, localFilePath); err != nil {
-						log.Fatalf("failed to download file from s3, %v", err)
+						log.Panicf("failed to download file from s3, %v", err)
 					}
 				} else {
-					log.Fatalf("failed to stat file, %v", err)
+					log.Panicf("failed to stat file, %v", err)
 				}
 			} else if stat.Size() == 0 {
 				log.Printf("%s is empty, downloading from s3[%s]...", localFilePath, remoteFilePath)
 				if err := os.Remove(localFilePath); err != nil {
-					log.Fatalf("failed to remove file, %v", err)
+					log.Panicf("failed to remove file, %v", err)
 				}
 				if err := r.downloadFileFromS3(remoteFilePath, localFilePath); err != nil {
-					log.Fatalf("failed to download file from s3, %v", err)
+					log.Panicf("failed to download file from s3, %v", err)
 				}
 			} else {
 				log.Printf("%s is already exists", localFilePath)
@@ -138,10 +138,10 @@ func (r *S3Remote) ExistsOrSync(name string) {
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-				log.Fatalf("failed to create dir %s, %v", dir, err)
+				log.Panicf("failed to create dir %s, %v", dir, err)
 			}
 		} else {
-			log.Fatalf("failed to stat dir, %v", err)
+			log.Panicf("failed to stat dir, %v", err)
 		}
 	}
 
