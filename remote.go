@@ -2,6 +2,7 @@ package dynamic
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -16,8 +17,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
+var (
+	ErrTunnelNotExits = errors.New("tunnel not exits")
+	ErrDownloadFailed = errors.New("download failed")
+)
+
+func isTunnelNotExist(err error) bool {
+	return errors.Is(err, ErrTunnelNotExits)
+}
+
 type Remote interface {
-	ExistsOrSync(name string)
+	Sync(name string) error
 }
 
 var (
@@ -54,7 +64,7 @@ func NewS3Remote(bucket string) *S3Remote {
 func (r *S3Remote) createS3Client() (*s3.Client, error) {
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("failed to create client, %v", err)
+		return nil, fmt.Errorf("failed to create client, %w", err)
 	}
 
 	return s3.NewFromConfig(cfg), nil
@@ -63,7 +73,7 @@ func (r *S3Remote) createS3Client() (*s3.Client, error) {
 func (r *S3Remote) downloadFileFromS3(remoteFilePath string, localFilePath string) error {
 	client, err := r.createS3Client()
 	if err != nil {
-		log.Panicf("failed to create s3 client, %v", err)
+		return fmt.Errorf("failed to create s3 client, %w", err)
 	}
 
 	// Create a file to write the S3 Object contents to.
@@ -73,18 +83,19 @@ func (r *S3Remote) downloadFileFromS3(remoteFilePath string, localFilePath strin
 	})
 
 	if err != nil {
-		return fmt.Errorf("failed to get object, %v", err)
+		log.Printf("failed to get object, %v", err)
+		return ErrTunnelNotExits
 	}
 
 	file, err := os.Create(localFilePath)
 	if err != nil {
-		return fmt.Errorf("failed to create file %q, %v", localFilePath, err)
+		return fmt.Errorf("failed to create file %q, %w", localFilePath, err)
 	}
 	defer file.Close()
 
 	written, err := io.Copy(file, getObjectResponse.Body)
 	if err != nil {
-		return fmt.Errorf("failed to write file contents! %v", err)
+		return fmt.Errorf("failed to write file contents! %w", err)
 	} else if written != getObjectResponse.ContentLength {
 		return fmt.Errorf("wrote a different size than was given to us")
 	}
@@ -141,27 +152,36 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 	wg.Wait()
 
 	if len(errChan) > 0 {
-		return fmt.Errorf("%d errors occurred during downloading", len(errChan))
+		log.Printf("%d errors occurred during downloading", len(errChan))
+		for err := range errChan {
+			if isTunnelNotExist(err) {
+				return ErrTunnelNotExits
+			}
+		}
+		return ErrDownloadFailed
 	}
 
 	return nil
 }
 
-func (r *S3Remote) ExistsOrSync(name string) {
+func (r *S3Remote) Sync(name string) error {
 	dir := filepath.Join(warehouse, name)
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-				log.Panicf("failed to create dir %s, %v", dir, err)
+				return fmt.Errorf("failed to create dir %s, %w", dir, err)
 			}
 		} else {
-			log.Panicf("failed to stat dir, %v", err)
+			return fmt.Errorf("failed to stat dir, %w", err)
 		}
 	}
 
 	startTime := time.Now()
 	if err := r.batchDownloadFilesFromS3(name); err != nil {
-		log.Panicf("failed to download files from s3, %v", err)
+		os.RemoveAll(dir)
+		return fmt.Errorf("failed to download files from s3, %w", err)
 	}
 	log.Printf("download files from s3 took %v", time.Since(startTime))
+
+	return nil
 }

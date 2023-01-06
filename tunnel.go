@@ -52,7 +52,9 @@ func GetTunnel(name string) (Tunnel, error) {
 	}
 
 	if remote != nil {
-		remote.ExistsOrSync(name)
+		if err := remote.Sync(name); err != nil {
+			return nil, err
+		}
 	}
 
 	var (
