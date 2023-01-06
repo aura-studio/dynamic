@@ -179,6 +179,9 @@ func (r *S3Remote) Sync(name string) error {
 	startTime := time.Now()
 	if err := r.batchDownloadFilesFromS3(name); err != nil {
 		os.RemoveAll(dir)
+		if isTunnelNotExist(err) {
+			return ErrTunnelNotExits
+		}
 		return fmt.Errorf("failed to download files from s3, %w", err)
 	}
 	log.Printf("download files from s3 took %v", time.Since(startTime))

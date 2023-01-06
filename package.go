@@ -28,7 +28,13 @@ func getPackage(packageName string, commit string) (Tunnel, error) {
 	name := getPackageTunnelName(packageName, commit)
 
 	if tunnel, ok := packageMap[name]; ok {
-		return tunnel, nil
+		if tunnel != nil {
+			return tunnel, nil
+		} else if commit != Latest {
+			return getPackage(packageName, Latest)
+		} else {
+			return nil, ErrTunnelNotExits
+		}
 	} else {
 		tunnel, err := GetTunnel(name)
 		if err != nil {
