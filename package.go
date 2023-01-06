@@ -21,6 +21,10 @@ func GetPackage(packageName string, commit string) (Tunnel, error) {
 	muPackage.Lock()
 	defer muPackage.Unlock()
 
+	return getPackage(packageName, commit)
+}
+
+func getPackage(packageName string, commit string) (Tunnel, error) {
 	name := getPackageTunnelName(packageName, commit)
 
 	if tunnel, ok := packageMap[name]; ok {
@@ -35,7 +39,7 @@ func GetPackage(packageName string, commit string) (Tunnel, error) {
 			packageMap[name] = nil
 
 			if commit != Latest {
-				return GetPackage(packageName, Latest)
+				return getPackage(packageName, Latest)
 			}
 			return nil, nil
 		}
