@@ -134,7 +134,7 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 					return
 				}
 			} else if stat.Size() == 0 {
-				log.Printf("%s is empty, downloading from s3[%s]...", localFilePath, remoteFilePath)
+				log.Printf("%s is empty, downloading from %s...", localFilePath, filepath.Join(r.bucket, remoteFilePath))
 				if err := os.Remove(localFilePath); err != nil {
 					log.Printf("failed to remove file, %v", err)
 					errChan <- err
