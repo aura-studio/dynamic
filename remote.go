@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"time"
 
@@ -116,12 +117,12 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 		go func(file string) {
 			defer wg.Done()
 
-			localFilePath := filepath.Join(filepath.Join(warehouse, name), file)
-			remoteFilePath := filepath.ToSlash(filepath.Join(name, file))
+			localFilePath := filepath.Join(filepath.Join(warehouse, runtime.Version(), name), file)
+			remoteFilePath := filepath.ToSlash(filepath.Join(runtime.Version(), name, file))
 
 			if stat, err := os.Stat(localFilePath); err != nil {
 				if os.IsNotExist(err) {
-					log.Printf("%s does not exist, downloading from s3[%s]...", localFilePath, remoteFilePath)
+					log.Printf("%s not found, downloading from %s...", localFilePath, filepath.Join(r.bucket, remoteFilePath))
 					if err := r.downloadFileFromS3(remoteFilePath, localFilePath); err != nil {
 						log.Printf("failed to download file from s3, %v", err)
 						errChan <- err
@@ -165,7 +166,7 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 }
 
 func (r *S3Remote) Sync(name string) error {
-	dir := filepath.Join(warehouse, name)
+	dir := filepath.Join(warehouse, runtime.Version(), name)
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {

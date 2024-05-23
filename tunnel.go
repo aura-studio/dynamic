@@ -3,6 +3,7 @@ package dynamic
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"plugin"
 	"runtime"
 	"sync"
@@ -61,7 +62,9 @@ func GetTunnel(name string) (Tunnel, error) {
 		plug *plugin.Plugin
 		err  error
 	)
-	plug, err = plugin.Open(fmt.Sprintf("%s/%s/libgo_%s.so", warehouse, name, name))
+	localFileName := fmt.Sprintf("libgo_%s.so", name)
+	localFilePath := filepath.Join(warehouse, runtime.Version(), name, localFileName)
+	plug, err = plugin.Open(localFilePath)
 	if err != nil {
 		return nil, err
 	}
