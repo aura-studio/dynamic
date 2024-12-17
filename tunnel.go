@@ -2,7 +2,6 @@ package dynamic
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"plugin"
 	"runtime"
@@ -34,15 +33,13 @@ var (
 )
 
 func GetWarehouse() string {
-	var warehouse string
-	if s, ok := os.LookupEnv("DYNAMIC_LOCAL"); ok {
-		warehouse = s
+	if local != "" {
+		return local
 	} else if runtime.GOOS == "windows" {
-		warehouse = "C:/warehouse"
+		return "C:/warehouse"
 	} else {
-		warehouse = "/tmp/warehouse"
+		return "/tmp/warehouse"
 	}
-	return warehouse
 }
 
 func GetTunnel(name string) (Tunnel, error) {

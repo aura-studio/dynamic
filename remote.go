@@ -32,12 +32,11 @@ type Remote interface {
 }
 
 func NewRemote() Remote {
-	s, ok := os.LookupEnv("DYNAMIC_REMOTE")
-	if !ok {
+	if remote == "" {
 		return nil
 	}
 
-	u, err := url.Parse(s)
+	u, err := url.Parse(remote)
 	if err != nil {
 		log.Panicf("parsing remote url error: %v", err)
 	}
