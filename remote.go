@@ -31,25 +31,25 @@ type Remote interface {
 	Sync(name string) error
 }
 
-var (
-	remote Remote
-)
-
-func init() {
-	if s, ok := os.LookupEnv("DYNAMIC_REMOTE"); !ok {
-		return
-	} else {
-		u, err := url.Parse(s)
-		if err != nil {
-			log.Panicf("parsing remote url error: %v", err)
-		}
-		switch u.Scheme {
-		case "s3":
-			remote = NewS3Remote(u.Host)
-		default:
-			log.Panicf("unknown remote scheme: %s", u.Scheme)
-		}
+func NewRemote() Remote {
+	s, ok := os.LookupEnv("DYNAMIC_REMOTE")
+	if !ok {
+		return nil
 	}
+
+	u, err := url.Parse(s)
+	if err != nil {
+		log.Panicf("parsing remote url error: %v", err)
+	}
+
+	switch u.Scheme {
+	case "s3":
+		return NewS3Remote(u.Host)
+	default:
+		log.Panicf("unknown remote scheme: %s", u.Scheme)
+	}
+
+	return nil
 }
 
 type S3Remote struct {
@@ -117,7 +117,7 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 		go func(file string) {
 			defer wg.Done()
 
-			localFilePath := filepath.Join(filepath.Join(warehouse, runtime.Version(), name), file)
+			localFilePath := filepath.Join(filepath.Join(GetWarehouse(), runtime.Version(), name), file)
 			remoteFilePath := filepath.ToSlash(filepath.Join(runtime.Version(), name, file))
 
 			if stat, err := os.Stat(localFilePath); err != nil {
@@ -166,7 +166,7 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 }
 
 func (r *S3Remote) Sync(name string) error {
-	dir := filepath.Join(warehouse, runtime.Version(), name)
+	dir := filepath.Join(GetWarehouse(), runtime.Version(), name)
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {

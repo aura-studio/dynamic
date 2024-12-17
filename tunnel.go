@@ -29,12 +29,12 @@ func (t *Template) Invoke(name string, args string) string {
 }
 
 var (
-	warehouse string
 	mu        sync.Mutex
 	tunnelMap = make(map[string]Tunnel)
 )
 
-func init() {
+func GetWarehouse() string {
+	var warehouse string
 	if s, ok := os.LookupEnv("DYNAMIC_LOCAL"); ok {
 		warehouse = s
 	} else if runtime.GOOS == "windows" {
@@ -42,6 +42,7 @@ func init() {
 	} else {
 		warehouse = "/tmp/warehouse"
 	}
+	return warehouse
 }
 
 func GetTunnel(name string) (Tunnel, error) {
@@ -52,10 +53,9 @@ func GetTunnel(name string) (Tunnel, error) {
 		return tunnel, nil
 	}
 
-	if remote != nil {
-		if err := remote.Sync(name); err != nil {
-			return nil, err
-		}
+	remote := NewRemote()
+	if err := remote.Sync(name); err != nil {
+		return nil, err
 	}
 
 	var (
@@ -63,7 +63,7 @@ func GetTunnel(name string) (Tunnel, error) {
 		err  error
 	)
 	localFileName := fmt.Sprintf("libgo_%s.so", name)
-	localFilePath := filepath.Join(warehouse, runtime.Version(), name, localFileName)
+	localFilePath := filepath.Join(GetWarehouse(), runtime.Version(), name, localFileName)
 	plug, err = plugin.Open(localFilePath)
 	if err != nil {
 		return nil, err
