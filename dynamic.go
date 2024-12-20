@@ -6,6 +6,6 @@ var (
 )
 
 func Init(localArg string, remoteArg string) {
-	remote = localArg
-	local = remoteArg
+	local = localArg
+	remote = remoteArg
 }
