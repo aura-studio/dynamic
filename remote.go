@@ -96,7 +96,7 @@ func (r *S3Remote) downloadFileFromS3(remoteFilePath string, localFilePath strin
 	written, err := io.Copy(file, getObjectResponse.Body)
 	if err != nil {
 		return fmt.Errorf("failed to write file contents! %w", err)
-	} else if written != getObjectResponse.ContentLength {
+	} else if written != *getObjectResponse.ContentLength {
 		return fmt.Errorf("wrote a different size than was given to us")
 	}
 
