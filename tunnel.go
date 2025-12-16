@@ -60,7 +60,7 @@ func GetTunnel(name string) (Tunnel, error) {
 		err  error
 	)
 	localFileName := fmt.Sprintf("libgo_%s.so", name)
-	localFilePath := filepath.Join(GetWarehouse(), runtime.Version(), name, localFileName)
+	localFilePath := filepath.Join(GetWarehouse(), getEnv(), name, localFileName)
 	plug, err = plugin.Open(localFilePath)
 	if err != nil {
 		return nil, err

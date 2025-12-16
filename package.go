@@ -1,37 +1,48 @@
 package dynamic
 
 import (
+	"regexp"
 	"strings"
 	"sync"
 )
 
-const Latest = "latest"
+const (
+	Default = "default"
+	Latest  = "latest"
+)
 
 var (
-	namespace  string
-	packageMap = make(map[string]Tunnel)
-	muPackage  sync.Mutex
+	namespace string
+	pkgMap    = make(map[string]Tunnel)
+	muPkg     sync.Mutex
+	allowed   = regexp.MustCompile(`^[A-Za-z0-9.-]+$`)
 )
 
 func UseNamespace(s string) {
+	if !allowed.MatchString(s) {
+		panic("invalid namespace")
+	}
+	if s == "" {
+		s = Default
+	}
 	namespace = s
 }
 
-func GetPackage(packageName string, commit string) (Tunnel, error) {
-	muPackage.Lock()
-	defer muPackage.Unlock()
+func GetPackage(pkg string, version string) (Tunnel, error) {
+	muPkg.Lock()
+	defer muPkg.Unlock()
 
-	return getPackage(packageName, commit)
+	return getPackage(pkg, version)
 }
 
-func getPackage(packageName string, commit string) (Tunnel, error) {
-	name := getPackageTunnelName(packageName, commit)
+func getPackage(pkg string, version string) (Tunnel, error) {
+	name := getPackageTunnelName(pkg, version)
 
-	if tunnel, ok := packageMap[name]; ok {
+	if tunnel, ok := pkgMap[name]; ok {
 		if tunnel != nil {
 			return tunnel, nil
-		} else if commit != Latest {
-			return getPackage(packageName, Latest)
+		} else if version != Latest {
+			return getPackage(pkg, Latest)
 		} else {
 			return nil, ErrTunnelNotExits
 		}
@@ -42,45 +53,45 @@ func getPackage(packageName string, commit string) (Tunnel, error) {
 				return nil, err
 			}
 
-			packageMap[name] = nil
+			pkgMap[name] = nil
 
-			if commit != Latest {
-				return getPackage(packageName, Latest)
+			if version != Latest {
+				return getPackage(pkg, Latest)
 			}
 			return nil, nil
 		}
-		packageMap[name] = tunnel
+		pkgMap[name] = tunnel
 		return tunnel, nil
 	}
 }
 
-func ClosePackage(packageName string, commit string) {
-	muPackage.Lock()
-	defer muPackage.Unlock()
+func ClosePackage(pkg string, version string) {
+	muPkg.Lock()
+	defer muPkg.Unlock()
 
-	name := getPackageTunnelName(packageName, commit)
+	name := getPackageTunnelName(pkg, version)
 
-	if tunnel, ok := packageMap[name]; ok {
+	if tunnel, ok := pkgMap[name]; ok {
 		if tunnel != nil {
 			tunnel.Close()
 		}
-		delete(packageMap, name)
+		delete(pkgMap, name)
 	}
 }
 
-func RegisterPackage(packageName string, commit string, tunnel Tunnel) {
-	muPackage.Lock()
-	defer muPackage.Unlock()
+func RegisterPackage(pkg string, version string, tunnel Tunnel) {
+	muPkg.Lock()
+	defer muPkg.Unlock()
 
-	name := getPackageTunnelName(packageName, commit)
-	packageMap[name] = tunnel
+	if !allowed.MatchString(pkg) || !allowed.MatchString(version) {
+		panic("invalid package name or version")
+	}
+
+	name := getPackageTunnelName(pkg, version)
+	pkgMap[name] = tunnel
 	RegisterTunnel(name, tunnel)
 }
 
-func getPackageTunnelName(packageName string, commit string) string {
-	name := strings.Join([]string{packageName, commit}, "_")
-	if namespace != "" {
-		name = strings.Join([]string{namespace, name}, "_")
-	}
-	return name
+func getPackageTunnelName(pkg string, version string) string {
+	return strings.Join([]string{namespace, pkg, version}, "_")
 }
