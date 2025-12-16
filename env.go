@@ -3,6 +3,7 @@ package dynamic
 import (
 	"bufio"
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
@@ -171,12 +172,16 @@ func GetArch() string {
 			// GOAMD64 is typically "v1"/"v2"/"v3"/"v4".
 			if strings.HasPrefix(goamd64, "v") {
 				return "amd64" + goamd64
+			} else {
+				fmt.Printf("unexpected GOAMD64 value: %q", goamd64)
 			}
 			return "amd64"
 		case "arm":
 			goarm := strings.TrimSpace(env.GOARM)
 			if goarm != "" {
 				return "armv" + goarm
+			} else {
+				fmt.Println("unexpected GOARM empty value")
 			}
 			return "arm"
 		case "arm64":
@@ -220,9 +225,4 @@ func GetCompiler() string {
 		return strings.TrimSpace(runtime.Version())
 	}
 	return strings.TrimSpace(string(out))
-}
-
-func getVariant() string {
-	// TODO: 根据debuginfo，推断variable的变种
-	return "generic"
 }
