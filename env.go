@@ -3,7 +3,6 @@ package dynamic
 import (
 	"bufio"
 	"encoding/json"
-	"log"
 	"os"
 	"os/exec"
 	"runtime"
@@ -172,16 +171,12 @@ func GetArch() string {
 			// GOAMD64 is typically "v1"/"v2"/"v3"/"v4".
 			if strings.HasPrefix(goamd64, "v") {
 				return "amd64" + goamd64
-			} else {
-				log.Printf("unexpected GOAMD64 value: %q", goamd64)
 			}
-			return "amd64"
+			return "amd64v1"
 		case "arm":
 			goarm := strings.TrimSpace(env.GOARM)
 			if goarm != "" {
 				return "armv" + goarm
-			} else {
-				log.Println("unexpected GOARM empty value")
 			}
 			return "arm"
 		case "arm64":
