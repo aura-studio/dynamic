@@ -3,7 +3,7 @@ package dynamic
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"runtime"
@@ -15,7 +15,7 @@ func getEnv() string {
 	os := GetOS()
 	arch := GetArch()
 	compiler := GetCompiler()
-	variant := getVariant()
+	variant := GetVariant()
 	env := os + "_" + arch + "_" + compiler + "_" + variant
 	return env
 }
@@ -173,7 +173,7 @@ func GetArch() string {
 			if strings.HasPrefix(goamd64, "v") {
 				return "amd64" + goamd64
 			} else {
-				fmt.Printf("unexpected GOAMD64 value: %q", goamd64)
+				log.Printf("unexpected GOAMD64 value: %q", goamd64)
 			}
 			return "amd64"
 		case "arm":
@@ -181,7 +181,7 @@ func GetArch() string {
 			if goarm != "" {
 				return "armv" + goarm
 			} else {
-				fmt.Println("unexpected GOARM empty value")
+				log.Println("unexpected GOARM empty value")
 			}
 			return "arm"
 		case "arm64":
@@ -225,4 +225,9 @@ func GetCompiler() string {
 		return strings.TrimSpace(runtime.Version())
 	}
 	return strings.TrimSpace(string(out))
+}
+
+func GetVariant() string {
+	// TODO: 根据debuginfo，推断variable的变种
+	return "generic"
 }
