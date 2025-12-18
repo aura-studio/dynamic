@@ -27,6 +27,7 @@ func isTunnelNotExist(err error) bool {
 
 type Remote interface {
 	Sync(name string) error
+	Path() string
 }
 
 func NewRemote(remotePath string) Remote {
@@ -57,6 +58,10 @@ func NewS3Remote(bucket string) *S3Remote {
 	return &S3Remote{
 		bucket: bucket,
 	}
+}
+
+func (r *S3Remote) Path() string {
+	return fmt.Sprintf("s3://%s", r.bucket)
 }
 
 func (r *S3Remote) createS3Client() (*s3.Client, error) {
