@@ -11,6 +11,7 @@ func UseWarehouse(local, remote string) {
 		panic("dynamic: invalid remote warehouse URL")
 	}
 	warehouse.Init(local, remote)
+	log.Printf("%#v", warehouse)
 }
 
 func UseNamespace(namespace string) {
