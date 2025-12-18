@@ -55,7 +55,7 @@ func (t *Toolchain) Init() {
 		t.Variant = os.Getenv("DYNAMIC_VARIANT")
 	}
 	if t.Variant == "" {
-		t.Variant = "generic"
+		t.Variant = "generic" // 包含构建参数和so的路径都必须固定
 	}
 }
 
