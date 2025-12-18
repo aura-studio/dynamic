@@ -19,7 +19,6 @@ import (
 
 var (
 	ErrTunnelNotExits = errors.New("dynamic: tunnel not exits")
-	ErrDownloadFailed = errors.New("dynamic: download failed")
 )
 
 func isTunnelNotExist(err error) bool {
@@ -157,7 +156,7 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 				return ErrTunnelNotExits
 			}
 		}
-		return ErrDownloadFailed
+		return errors.New("dynamic: download failed")
 	}
 
 	return nil

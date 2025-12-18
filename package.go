@@ -6,10 +6,6 @@ import (
 	"sync"
 )
 
-var (
-	ErrDynamicNotExits = errors.New("dynamic: dynamic package not exits")
-)
-
 const (
 	NamespaceDefault = "default"
 	VersionDefault   = "default"
@@ -107,7 +103,7 @@ func (dc *DynamicCenter) GetTunnel(package_ string, version string) (tunnel Tunn
 		return tunnel, nil
 	}
 
-	return nil, ErrDynamicNotExits
+	return nil, errors.New("dynamic: dynamic package not exits")
 }
 
 func (dc *DynamicCenter) ClosePackage(package_ string, version string) {

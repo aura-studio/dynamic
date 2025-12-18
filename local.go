@@ -9,10 +9,6 @@ import (
 	"runtime"
 )
 
-var (
-	ErrUnexpectedSymbolNew = errors.New("dynamic: unexpected type from symbol New")
-)
-
 type Local struct {
 	localPath string
 }
@@ -62,7 +58,7 @@ func (l Local) PluginLoad(name string) (any, error) {
 	} else if symbol, err = plug.Lookup("New"); err == nil {
 		newFunc, ok := symbol.(func() any)
 		if !ok {
-			return nil, ErrUnexpectedSymbolNew
+			return nil, errors.New("dynamic: unexpected type from symbol New")
 		}
 		return newFunc(), nil
 	} else {

@@ -5,10 +5,6 @@ import (
 	"sync"
 )
 
-var (
-	ErrSymbolIsNotTunnel = errors.New("dynamic: symbol is not a Tunnel")
-)
-
 type Tunnel interface {
 	Init()
 	Invoke(string, string) string
@@ -56,7 +52,7 @@ func (tc *TunnelCenter) GetTunnel(name string) (Tunnel, error) {
 
 	tunnel, ok := plugin.(Tunnel)
 	if !ok {
-		return nil, ErrSymbolIsNotTunnel
+		return nil, errors.New("dynamic: symbol is not a Tunnel")
 	}
 
 	tunnel.Init()

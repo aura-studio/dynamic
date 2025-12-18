@@ -2,10 +2,6 @@ package dynamic
 
 import "errors"
 
-var (
-	ErrWarehousePluginNotExists = errors.New("dynamic: warehouse plugin not exists")
-)
-
 type Warehouse struct {
 	Local  *Local
 	Remote Remote
@@ -26,12 +22,12 @@ func (w *Warehouse) Init(localPath string, remotePath string) *Warehouse {
 
 func (w *Warehouse) Load(name string) (any, error) {
 	if w.Local == nil {
-		return nil, ErrWarehousePluginNotExists
+		return nil, errors.New("dynamic: warehouse plugin not exists")
 	}
 
 	if !w.Local.Exists(name) {
 		if w.Remote == nil {
-			return nil, ErrWarehousePluginNotExists
+			return nil, errors.New("dynamic: warehouse plugin not exists")
 		}
 
 		if err := w.Remote.Sync(name); err != nil {
@@ -39,7 +35,7 @@ func (w *Warehouse) Load(name string) (any, error) {
 		}
 
 		if !w.Local.Exists(name) {
-			return nil, ErrWarehousePluginNotExists
+			return nil, errors.New("dynamic: warehouse plugin not exists")
 		}
 	}
 
