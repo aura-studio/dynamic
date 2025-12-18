@@ -163,7 +163,7 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 }
 
 func (r *S3Remote) Sync(name string) error {
-	dir := filepath.Join(getLocalWarehouse(), toolchain.String(), name)
+	dir := filepath.Join(warehouse.Local.Path(), toolchain.String(), name)
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
