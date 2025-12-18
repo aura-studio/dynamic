@@ -38,7 +38,7 @@ func GetWarehouse() string {
 	} else if runtime.GOOS == "windows" {
 		return "C:/warehouse"
 	} else {
-		return "/tmp/warehouse"
+		return "/opt/warehouse"
 	}
 }
 
