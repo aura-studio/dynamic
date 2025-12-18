@@ -8,18 +8,21 @@ import (
 	"plugin"
 )
 
-type Local struct{}
+type Local struct {
+	localPath string
+}
 
-func NewLocal() *Local {
-	return &Local{}
+func NewLocal(localPath string) *Local {
+	if toolchain.Variant == "generic" {
+		localPath = "/opt/warehouse"
+	}
+	return &Local{
+		localPath: localPath,
+	}
 }
 
 func (l Local) Path() string {
-	switch toolchain.Variant {
-	case "generic":
-		return "/opt/warehouse"
-	}
-	panic("dynamic: unsupported toolchain variant: " + toolchain.Variant)
+	return l.localPath
 }
 
 func (l Local) Exists(name string) bool {

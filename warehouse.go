@@ -15,10 +15,8 @@ func NewWarehouse() *Warehouse {
 	return &Warehouse{}
 }
 
-func (w *Warehouse) Init(localPath bool, remotePath string) {
-	if localPath {
-		w.Local = NewLocal()
-	}
+func (w *Warehouse) Init(localPath, remotePath string) {
+	w.Local = NewLocal(localPath)
 	w.Remote = NewRemote(remotePath)
 }
 

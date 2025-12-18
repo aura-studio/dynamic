@@ -1,14 +1,13 @@
 package dynamic
 
-func UseLocalWarehouse() {
-	warehouse.Init(true, "")
-}
-
-func UseRemoteWarehouse(remote string) {
+func UseWarehouse(local, remote string) {
+	if !allowed.IsPath(local) {
+		panic("dynamic: invalid local warehouse path")
+	}
 	if !allowed.IsURL(remote) {
 		panic("dynamic: invalid remote warehouse URL")
 	}
-	warehouse.Init(true, remote)
+	warehouse.Init(local, remote)
 }
 
 func UseNamespace(namespace string) {
