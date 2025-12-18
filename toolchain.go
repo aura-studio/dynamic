@@ -31,6 +31,9 @@ func init() {
 	if Variant == "" {
 		Variant = os.Getenv("DYNAMIC_VARIANT")
 	}
+	if OS == "" || Arch == "" || Compiler == "" || Variant == "" {
+		panic("dynamic: OS, Arch, Compiler, Variant must be set via -ldflags or environment variables")
+	}
 }
 
 func getToolChain() string {
