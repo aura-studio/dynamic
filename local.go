@@ -3,6 +3,7 @@ package dynamic
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"plugin"
@@ -36,10 +37,12 @@ func (l Local) Exists(name string) bool {
 	localGoFilePath := filepath.Join(l.Path(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
 
 	if stat, err := os.Stat(localCgoFilePath); err != nil || stat.Size() == 0 {
+		log.Println("dynamic: Local Exists missing cgo file", localCgoFilePath)
 		return false
 	}
 
 	if stat, err := os.Stat(localGoFilePath); err != nil || stat.Size() == 0 {
+		log.Println("dynamic: Local Exists missing go file", localGoFilePath)
 		return false
 	}
 

@@ -25,6 +25,9 @@ func (w *Warehouse) Init(localPath string, remotePath string) *Warehouse {
 }
 
 func (w *Warehouse) Load(name string) (any, error) {
+	log.Printf("dynamic: Warehouse Load %q", name)
+	log.Println(w.Local != nil, w.Remote != nil)
+
 	if w.Local == nil {
 		return nil, errors.New("dynamic: warehouse plugin not exists")
 	}
