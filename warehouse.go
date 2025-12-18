@@ -34,6 +34,7 @@ func (w *Warehouse) Load(name string) (any, error) {
 			return nil, errors.New("dynamic: warehouse plugin not exists")
 		}
 
+		log.Println("dynamic: Warehouse Remote sync", name)
 		if err := w.Remote.Sync(name); err != nil {
 			return nil, err
 		}
