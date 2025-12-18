@@ -1,6 +1,9 @@
 package dynamic
 
-import "errors"
+import (
+	"errors"
+	"log"
+)
 
 type Warehouse struct {
 	Local  *Local
@@ -14,6 +17,7 @@ func NewWarehouse() *Warehouse {
 }
 
 func (w *Warehouse) Init(localPath string, remotePath string) *Warehouse {
+	log.Println("dynamic: Warehouse Init", localPath, remotePath)
 	return &Warehouse{
 		Local:  NewLocal(localPath),
 		Remote: NewRemote(remotePath),

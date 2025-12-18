@@ -2,6 +2,7 @@ package dynamic
 
 import (
 	"errors"
+	"log"
 	"sync"
 )
 
@@ -40,6 +41,8 @@ func NewTunnelCenter() *TunnelCenter {
 func (tc *TunnelCenter) GetTunnel(name string) (Tunnel, error) {
 	tc.mu.Lock()
 	defer tc.mu.Unlock()
+
+	log.Println("dynamic: TunnelCenter GetTunnel", name)
 
 	if tunnel, ok := tc.tunnels[name]; ok {
 		return tunnel, nil
