@@ -48,6 +48,8 @@ func (tc *TunnelCenter) GetTunnel(name string) (Tunnel, error) {
 		return tunnel, nil
 	}
 
+	log.Printf("%#v", warehouse)
+
 	plugin, err := warehouse.Load(name)
 	if err != nil {
 		return nil, err
