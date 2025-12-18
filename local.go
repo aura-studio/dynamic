@@ -36,13 +36,28 @@ func (l Local) Exists(name string) bool {
 	localCgoFilePath := filepath.Join(l.Path(), toolchain.String(), name, fmt.Sprintf("libcgo_%s.so", name))
 	localGoFilePath := filepath.Join(l.Path(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
 
-	if stat, err := os.Stat(localCgoFilePath); err != nil || stat.Size() == 0 {
-		log.Println("dynamic: Local Exists missing cgo file", localCgoFilePath)
+	// libgo is required.
+	if stat, err := os.Stat(localGoFilePath); err != nil {
+		if os.IsNotExist(err) {
+			log.Println("dynamic: Local Exists missing go file", localGoFilePath)
+			return false
+		}
+		log.Println("dynamic: Local Exists stat go file error", localGoFilePath, err)
+		return false
+	} else if stat.Size() == 0 {
+		log.Println("dynamic: Local Exists go file is empty", localGoFilePath)
 		return false
 	}
 
-	if stat, err := os.Stat(localGoFilePath); err != nil || stat.Size() == 0 {
-		log.Println("dynamic: Local Exists missing go file", localGoFilePath)
+	// libcgo is optional: some builds may not produce it.
+	if stat, err := os.Stat(localCgoFilePath); err != nil {
+		if os.IsNotExist(err) {
+			return true
+		}
+		log.Println("dynamic: Local Exists stat cgo file error", localCgoFilePath, err)
+		return false
+	} else if stat.Size() == 0 {
+		log.Println("dynamic: Local Exists cgo file is empty", localCgoFilePath)
 		return false
 	}
 
