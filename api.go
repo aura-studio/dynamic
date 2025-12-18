@@ -1,6 +1,9 @@
 package dynamic
 
+import "log"
+
 func UseWarehouse(local, remote string) {
+	log.Printf("dynamic: UseWarehouse local_set=%t remote_set=%t", local != "", remote != "")
 	if !allowed.IsPath(local) {
 		panic("dynamic: invalid local warehouse path")
 	}
@@ -11,6 +14,7 @@ func UseWarehouse(local, remote string) {
 }
 
 func UseNamespace(namespace string) {
+	log.Printf("dynamic: UseNamespace namespace=%q", namespace)
 	if !allowed.IsKeyword(namespace) {
 		panic("dynamic: invalid package namespace")
 	}
@@ -18,6 +22,7 @@ func UseNamespace(namespace string) {
 }
 
 func UseDefaultVersion(version string) {
+	log.Printf("dynamic: UseDefaultVersion version=%q", version)
 	if !allowed.IsKeyword(version) {
 		panic("dynamic: invalid default package version")
 	}
@@ -25,6 +30,7 @@ func UseDefaultVersion(version string) {
 }
 
 func RegisterPackage(packageName string, version string, tunnel Tunnel) {
+	log.Printf("dynamic: RegisterPackage package=%q version=%q", packageName, version)
 	if !allowed.IsKeyword(packageName) {
 		panic("dynamic: invalid package name")
 	}
@@ -35,16 +41,24 @@ func RegisterPackage(packageName string, version string, tunnel Tunnel) {
 }
 
 func GetPackage(packageName string, version string) (Tunnel, error) {
+	log.Printf("dynamic: GetPackage package=%q version=%q", packageName, version)
 	if !allowed.IsKeyword(packageName) {
 		panic("dynamic: invalid package name")
 	}
 	if !allowed.IsKeyword(version) {
 		panic("dynamic: invalid package version")
 	}
-	return packageCenter.GetTunnel(packageName, version)
+	tunnel, err := packageCenter.GetTunnel(packageName, version)
+	if err != nil {
+		log.Printf("dynamic: GetPackage failed package=%q version=%q err=%v", packageName, version, err)
+		return nil, err
+	}
+	log.Printf("dynamic: GetPackage ok package=%q version=%q", packageName, version)
+	return tunnel, nil
 }
 
 func ClosePackage(packageName string, version string) {
+	log.Printf("dynamic: ClosePackage package=%q version=%q", packageName, version)
 	if !allowed.IsKeyword(packageName) {
 		panic("dynamic: invalid package name")
 	}
