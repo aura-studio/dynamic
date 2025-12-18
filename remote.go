@@ -114,8 +114,8 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 		go func(file string) {
 			defer wg.Done()
 
-			localFilePath := filepath.Join(filepath.Join(getLocalWarehouse(), getToolChain(), name), file)
-			remoteFilePath := filepath.ToSlash(filepath.Join(getToolChain(), name, file))
+			localFilePath := filepath.Join(filepath.Join(warehouse.Local.Path(), toolchain.String(), name), file)
+			remoteFilePath := filepath.ToSlash(filepath.Join(toolchain.String(), name, file))
 
 			if stat, err := os.Stat(localFilePath); err != nil {
 				if os.IsNotExist(err) {
@@ -163,7 +163,7 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 }
 
 func (r *S3Remote) Sync(name string) error {
-	dir := filepath.Join(getLocalWarehouse(), getToolChain(), name)
+	dir := filepath.Join(getLocalWarehouse(), toolchain.String(), name)
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {

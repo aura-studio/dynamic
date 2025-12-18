@@ -21,7 +21,7 @@ func NewLocal(localPath string) *Local {
 	return &Local{localPath: localPath}
 }
 
-func (l Local) GetPath() string {
+func (l Local) Path() string {
 	if l.localPath != "" {
 		return l.localPath
 	} else if runtime.GOOS == "windows" {
@@ -32,8 +32,8 @@ func (l Local) GetPath() string {
 }
 
 func (l Local) Exists(name string) bool {
-	localCgoFilePath := filepath.Join(l.GetPath(), toolchain.String(), name, fmt.Sprintf("libcgo_%s.so", name))
-	localGoFilePath := filepath.Join(l.GetPath(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
+	localCgoFilePath := filepath.Join(l.Path(), toolchain.String(), name, fmt.Sprintf("libcgo_%s.so", name))
+	localGoFilePath := filepath.Join(l.Path(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
 
 	if stat, err := os.Stat(localCgoFilePath); err != nil || stat.Size() == 0 {
 		return false
@@ -47,7 +47,7 @@ func (l Local) Exists(name string) bool {
 }
 
 func (l Local) PluginLoad(name string) (any, error) {
-	localGoFilePath := filepath.Join(l.GetPath(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
+	localGoFilePath := filepath.Join(l.Path(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
 	plug, err := plugin.Open(localGoFilePath)
 	if err != nil {
 		return nil, err
