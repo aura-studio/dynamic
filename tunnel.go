@@ -33,8 +33,8 @@ var (
 )
 
 func GetWarehouse() string {
-	if LocalPath != "" {
-		return LocalPath
+	if localPath != "" {
+		return localPath
 	} else if runtime.GOOS == "windows" {
 		return "C:/warehouse"
 	} else {
