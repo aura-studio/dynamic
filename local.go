@@ -61,15 +61,21 @@ func (l Local) Exists(name string) bool {
 		return false
 	}
 
+	log.Println("dynamic: Local Exists", name)
 	return true
 }
 
 func (l Local) PluginLoad(name string) (any, error) {
+	log.Println("dynamic: Local PluginLoad", name)
+
 	localGoFilePath := filepath.Join(l.Path(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
 	plug, err := plugin.Open(localGoFilePath)
 	if err != nil {
+		log.Println("dynamic: Local PluginLoad plugin.Open error", err)
 		return nil, err
 	}
+
+	log.Println("dynamic: Local PluginLoad plugin opened", name)
 
 	if symbol, err := plug.Lookup("Tunnel"); err == nil {
 		return symbol, nil
