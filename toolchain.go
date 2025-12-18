@@ -55,7 +55,7 @@ func (t *Toolchain) Init() {
 		t.Variant = os.Getenv("DYNAMIC_VARIANT")
 	}
 	if t.Variant == "" {
-		t.Variant = "default"
+		t.Variant = "generic"
 	}
 }
 
