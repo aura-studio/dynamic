@@ -1,11 +1,11 @@
 package dynamic
 
 var (
-	local  string
-	remote string
+	LocalPath  string
+	RemotePath string
 )
 
-func Init(localArg string, remoteArg string) {
-	local = localArg
-	remote = remoteArg
+func Init(localPath string, remotePath string) {
+	LocalPath = localPath
+	RemotePath = remotePath
 }

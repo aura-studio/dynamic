@@ -31,11 +31,11 @@ type Remote interface {
 }
 
 func NewRemote() Remote {
-	if remote == "" {
+	if RemotePath == "" {
 		return nil
 	}
 
-	u, err := url.Parse(remote)
+	u, err := url.Parse(RemotePath)
 	if err != nil {
 		log.Panicf("parsing remote url error: %v", err)
 	}
