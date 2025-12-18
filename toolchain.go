@@ -27,11 +27,17 @@ func (t *Toolchain) Init() {
 	} else {
 		t.OS = os.Getenv("DYNAMIC_OS")
 	}
+	if t.OS == "" {
+		t.OS = env.GetOS()
+	}
 
 	if BuildArch != "" {
 		t.Arch = BuildArch
 	} else {
 		t.Arch = os.Getenv("DYNAMIC_ARCH")
+	}
+	if t.Arch == "" {
+		t.Arch = env.GetArch()
 	}
 
 	if BuileCompiler != "" {
@@ -39,15 +45,17 @@ func (t *Toolchain) Init() {
 	} else {
 		t.Compiler = os.Getenv("DYNAMIC_COMPILER")
 	}
+	if t.Compiler == "" {
+		t.Compiler = env.GetCompiler()
+	}
 
 	if BuildVariant != "" {
 		t.Variant = BuildVariant
 	} else {
 		t.Variant = os.Getenv("DYNAMIC_VARIANT")
 	}
-
-	if t.OS == "" || t.Arch == "" || t.Compiler == "" || t.Variant == "" {
-		panic("dynamic: OS, Arch, Compiler, Variant must be set via -ldflags or environment variables")
+	if t.Variant == "" {
+		t.Variant = "default"
 	}
 }
 
