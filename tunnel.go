@@ -2,7 +2,6 @@ package dynamic
 
 import (
 	"errors"
-	"log"
 	"sync"
 )
 
@@ -42,13 +41,9 @@ func (tc *TunnelCenter) GetTunnel(name string) (Tunnel, error) {
 	tc.mu.Lock()
 	defer tc.mu.Unlock()
 
-	log.Println("dynamic: TunnelCenter GetTunnel", name)
-
 	if tunnel, ok := tc.tunnels[name]; ok {
 		return tunnel, nil
 	}
-
-	log.Printf("%#v", warehouse)
 
 	plugin, err := warehouse.Load(name)
 	if err != nil {

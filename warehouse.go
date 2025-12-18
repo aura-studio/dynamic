@@ -2,7 +2,6 @@ package dynamic
 
 import (
 	"errors"
-	"log"
 )
 
 type Warehouse struct {
@@ -16,16 +15,14 @@ func NewWarehouse() *Warehouse {
 	return &Warehouse{}
 }
 
-func (w *Warehouse) Init(localPath string, remotePath string) {
-	log.Println("dynamic: Warehouse Init", localPath, remotePath)
-	w.Local = NewLocal(localPath)
+func (w *Warehouse) Init(localPath bool, remotePath string) {
+	if localPath {
+		w.Local = NewLocal()
+	}
 	w.Remote = NewRemote(remotePath)
 }
 
 func (w *Warehouse) Load(name string) (any, error) {
-	log.Printf("dynamic: Warehouse Load %q", name)
-	log.Println(w.Local != nil, w.Remote != nil)
-
 	if w.Local == nil {
 		return nil, errors.New("dynamic: warehouse plugin not exists")
 	}
@@ -35,7 +32,6 @@ func (w *Warehouse) Load(name string) (any, error) {
 			return nil, errors.New("dynamic: warehouse plugin not exists")
 		}
 
-		log.Println("dynamic: Warehouse Remote sync", name)
 		if err := w.Remote.Sync(name); err != nil {
 			return nil, err
 		}

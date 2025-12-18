@@ -3,33 +3,25 @@ package dynamic
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"plugin"
-	"runtime"
 )
 
 type Local struct {
 	localPath string
 }
 
-func NewLocal(localPath string) *Local {
-	if localPath == "" {
-		return nil
-	}
-
-	return &Local{localPath: localPath}
+func NewLocal() *Local {
+	return &Local{}
 }
 
 func (l Local) Path() string {
-	if l.localPath != "" {
-		return l.localPath
-	} else if runtime.GOOS == "windows" {
-		return "C:/warehouse"
-	} else {
+	switch toolchain.Variant {
+	case "generic":
 		return "/opt/warehouse"
 	}
+	panic("dynamic: unsupported toolchain variant: " + toolchain.Variant)
 }
 
 func (l Local) Exists(name string) bool {
@@ -39,13 +31,10 @@ func (l Local) Exists(name string) bool {
 	// libgo is required.
 	if stat, err := os.Stat(localGoFilePath); err != nil {
 		if os.IsNotExist(err) {
-			log.Println("dynamic: Local Exists missing go file", localGoFilePath)
 			return false
 		}
-		log.Println("dynamic: Local Exists stat go file error", localGoFilePath, err)
 		return false
 	} else if stat.Size() == 0 {
-		log.Println("dynamic: Local Exists go file is empty", localGoFilePath)
 		return false
 	}
 
@@ -54,28 +43,20 @@ func (l Local) Exists(name string) bool {
 		if os.IsNotExist(err) {
 			return true
 		}
-		log.Println("dynamic: Local Exists stat cgo file error", localCgoFilePath, err)
 		return false
 	} else if stat.Size() == 0 {
-		log.Println("dynamic: Local Exists cgo file is empty", localCgoFilePath)
 		return false
 	}
 
-	log.Println("dynamic: Local Exists", name)
 	return true
 }
 
 func (l Local) PluginLoad(name string) (any, error) {
-	log.Println("dynamic: Local PluginLoad", name)
-
 	localGoFilePath := filepath.Join(l.Path(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
 	plug, err := plugin.Open(localGoFilePath)
 	if err != nil {
-		log.Println("dynamic: Local PluginLoad plugin.Open error", err)
 		return nil, err
 	}
-
-	log.Println("dynamic: Local PluginLoad plugin opened", name)
 
 	if symbol, err := plug.Lookup("Tunnel"); err == nil {
 		return symbol, nil

@@ -86,7 +86,6 @@ func (r *S3Remote) downloadFileFromS3(remoteFilePath string, localFilePath strin
 	})
 
 	if err != nil {
-		log.Printf("failed to get object, %v", err)
 		return ErrTunnelNotExits
 	}
 
