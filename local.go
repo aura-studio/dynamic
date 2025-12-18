@@ -8,9 +8,7 @@ import (
 	"plugin"
 )
 
-type Local struct {
-	localPath string
-}
+type Local struct{}
 
 func NewLocal() *Local {
 	return &Local{}
