@@ -16,12 +16,10 @@ func NewWarehouse() *Warehouse {
 	return &Warehouse{}
 }
 
-func (w *Warehouse) Init(localPath string, remotePath string) *Warehouse {
+func (w *Warehouse) Init(localPath string, remotePath string) {
 	log.Println("dynamic: Warehouse Init", localPath, remotePath)
-	return &Warehouse{
-		Local:  NewLocal(localPath),
-		Remote: NewRemote(remotePath),
-	}
+	w.Local = NewLocal(localPath)
+	w.Remote = NewRemote(remotePath)
 }
 
 func (w *Warehouse) Load(name string) (any, error) {
