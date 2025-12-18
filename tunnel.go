@@ -1,11 +1,12 @@
 package dynamic
 
 import (
-	"fmt"
-	"path/filepath"
-	"plugin"
-	"runtime"
+	"errors"
 	"sync"
+)
+
+var (
+	ErrSymbolIsNotTunnel = errors.New("dynamic: symbol is not a Tunnel")
 )
 
 type Tunnel interface {
@@ -27,89 +28,60 @@ func (t *Template) Invoke(name string, args string) string {
 	return ""
 }
 
-var (
-	mu        sync.Mutex
-	tunnelMap = make(map[string]Tunnel)
-)
+type TunnelCenter struct {
+	mu      sync.Mutex
+	tunnels map[string]Tunnel
+}
 
-func GetWarehouse() string {
-	if localPath != "" {
-		return localPath
-	} else if runtime.GOOS == "windows" {
-		return "C:/warehouse"
-	} else {
-		return "/opt/warehouse"
+var tunnelCenter = NewTunnelCenter()
+
+func NewTunnelCenter() *TunnelCenter {
+	return &TunnelCenter{
+		tunnels: make(map[string]Tunnel),
 	}
 }
 
-func GetTunnel(name string) (Tunnel, error) {
-	mu.Lock()
-	defer mu.Unlock()
+func (tc *TunnelCenter) GetTunnel(name string) (Tunnel, error) {
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
 
-	if tunnel, ok := tunnelMap[name]; ok {
+	if tunnel, ok := tc.tunnels[name]; ok {
 		return tunnel, nil
 	}
 
-	remote := NewRemote()
-	if err := remote.Sync(name); err != nil {
-		return nil, err
-	}
-
-	var (
-		plug *plugin.Plugin
-		err  error
-	)
-	localFileName := fmt.Sprintf("libgo_%s.so", name)
-	localFilePath := filepath.Join(GetWarehouse(), getToolChain(), name, localFileName)
-	plug, err = plugin.Open(localFilePath)
+	plugin, err := warehouse.Load(name)
 	if err != nil {
 		return nil, err
 	}
 
-	var (
-		tunnel Tunnel
-		ok     bool
-	)
-
-	if symbol, err := plug.Lookup("Tunnel"); err == nil {
-		tunnel, ok = symbol.(Tunnel)
-		if !ok {
-			return nil, fmt.Errorf("unexpected type from symbol Tunnel: %s", name)
-		}
-	} else if symbol, err = plug.Lookup("New"); err == nil {
-		newFunc, ok := symbol.(func() Tunnel)
-		if !ok {
-			return nil, fmt.Errorf("unexpected type from symbol New: %s", name)
-		}
-		tunnel = newFunc()
-	} else {
-		return nil, err
+	tunnel, ok := plugin.(Tunnel)
+	if !ok {
+		return nil, ErrSymbolIsNotTunnel
 	}
 
 	tunnel.Init()
-
-	tunnelMap[name] = tunnel
+	tc.tunnels[name] = tunnel
 
 	return tunnel, nil
 }
 
-func CloseTunnel(name string) error {
-	mu.Lock()
-	defer mu.Unlock()
+func (tc *TunnelCenter) CloseTunnel(name string) error {
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
 
-	if tunnel, ok := tunnelMap[name]; ok {
+	if tunnel, ok := tc.tunnels[name]; ok {
 		tunnel.Close()
-		delete(tunnelMap, name)
+		delete(tc.tunnels, name)
 	}
 
 	return nil
 }
 
-func RangeTunnel(f func(string, Tunnel) bool) {
-	mu.Lock()
-	defer mu.Unlock()
+func (tc *TunnelCenter) RangeTunnel(f func(string, Tunnel) bool) {
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
 
-	for name, tunnel := range tunnelMap {
+	for name, tunnel := range tc.tunnels {
 		if !f(name, tunnel) {
 			break
 		}
@@ -117,10 +89,10 @@ func RangeTunnel(f func(string, Tunnel) bool) {
 }
 
 // RegisterTunnel is usually used in debug mode
-func RegisterTunnel(name string, tunnel Tunnel) {
-	mu.Lock()
-	defer mu.Unlock()
+func (tc *TunnelCenter) RegisterTunnel(name string, tunnel Tunnel) {
+	tc.mu.Lock()
+	defer tc.mu.Unlock()
 
 	tunnel.Init()
-	tunnelMap[name] = tunnel
+	tc.tunnels[name] = tunnel
 }

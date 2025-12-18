@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	ErrTunnelNotExits = errors.New("tunnel not exits")
-	ErrDownloadFailed = errors.New("download failed")
+	ErrTunnelNotExits = errors.New("dynamic: tunnel not exits")
+	ErrDownloadFailed = errors.New("dynamic: download failed")
 )
 
 func isTunnelNotExist(err error) bool {
@@ -30,7 +30,7 @@ type Remote interface {
 	Sync(name string) error
 }
 
-func NewRemote() Remote {
+func NewRemote(remotePath string) Remote {
 	if remotePath == "" {
 		return nil
 	}
@@ -115,7 +115,7 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 		go func(file string) {
 			defer wg.Done()
 
-			localFilePath := filepath.Join(filepath.Join(GetWarehouse(), getToolChain(), name), file)
+			localFilePath := filepath.Join(filepath.Join(getLocalWarehouse(), getToolChain(), name), file)
 			remoteFilePath := filepath.ToSlash(filepath.Join(getToolChain(), name, file))
 
 			if stat, err := os.Stat(localFilePath); err != nil {
@@ -164,7 +164,7 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 }
 
 func (r *S3Remote) Sync(name string) error {
-	dir := filepath.Join(GetWarehouse(), getToolChain(), name)
+	dir := filepath.Join(getLocalWarehouse(), getToolChain(), name)
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
 			if err := os.MkdirAll(dir, os.ModePerm); err != nil {

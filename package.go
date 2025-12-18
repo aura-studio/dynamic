@@ -1,97 +1,139 @@
 package dynamic
 
 import (
-	"regexp"
+	"errors"
 	"strings"
 	"sync"
 )
 
-const (
-	Default = "default"
-	Latest  = "latest"
-)
-
 var (
-	namespace string
-	pkgMap    = make(map[string]Tunnel)
-	muPkg     sync.Mutex
-	allowed   = regexp.MustCompile(`^[A-Za-z0-9.-]+$`)
+	ErrDynamicNotExits = errors.New("dynamic: dynamic package not exits")
 )
 
-func UseNamespace(s string) {
-	if !allowed.MatchString(s) {
-		panic("invalid namespace")
-	}
-	if s == "" {
-		s = Default
-	}
-	namespace = s
+const (
+	NamespaceDefault = "default"
+	VersionDefault   = "default"
+	VersionLatest    = "latest"
+)
+
+type DynamicIndex struct {
+	Namespace string
+	Package   string
+	Version   string
 }
 
-func GetPackage(pkg string, version string) (Tunnel, error) {
-	muPkg.Lock()
-	defer muPkg.Unlock()
-
-	return getPackage(pkg, version)
+func NewDynamicIndex(namespace, package_, version string) *DynamicIndex {
+	return &DynamicIndex{
+		Namespace: namespace,
+		Package:   package_,
+		Version:   version,
+	}
 }
 
-func getPackage(pkg string, version string) (Tunnel, error) {
-	name := getPackageTunnelName(pkg, version)
+func (d DynamicIndex) String() string {
+	return strings.Join([]string{d.Namespace, d.Package, d.Version}, "_")
+}
 
-	if tunnel, ok := pkgMap[name]; ok {
-		if tunnel != nil {
-			return tunnel, nil
-		} else if version != Latest {
-			return getPackage(pkg, Latest)
-		} else {
-			return nil, ErrTunnelNotExits
-		}
-	} else {
-		tunnel, err := GetTunnel(name)
-		if err != nil {
-			if !isTunnelNotExist(err) {
-				return nil, err
-			}
+type Dynamic struct {
+	index  DynamicIndex
+	tunnel Tunnel
+}
 
-			pkgMap[name] = nil
+func NewDynamic(index DynamicIndex, tunnel Tunnel) *Dynamic {
+	return &Dynamic{
+		index:  index,
+		tunnel: tunnel,
+	}
+}
 
-			if version != Latest {
-				return getPackage(pkg, Latest)
-			}
-			return nil, nil
-		}
-		pkgMap[name] = tunnel
+func (d *Dynamic) GetTunnel() Tunnel {
+	return d.tunnel
+}
+
+type DynamicCenter struct {
+	namesapce      string
+	defaultVersion string
+	mu             sync.Mutex
+	dynamics       map[DynamicIndex]*Dynamic
+}
+
+var packageCenter = NewPackageCenter()
+
+func NewPackageCenter() *DynamicCenter {
+	return &DynamicCenter{
+		namesapce:      NamespaceDefault,
+		defaultVersion: VersionDefault,
+		dynamics:       make(map[DynamicIndex]*Dynamic),
+	}
+}
+
+func (dc *DynamicCenter) UseNamespace(s string) {
+	dc.namesapce = s
+}
+
+func (dc *DynamicCenter) UseDefaultVersion(v string) {
+	dc.defaultVersion = v
+}
+
+func (dc *DynamicCenter) GetTunnel(package_ string, version string) (tunnel Tunnel, err error) {
+	dc.mu.Lock()
+	defer dc.mu.Unlock()
+
+	var index DynamicIndex
+
+	// first try with provided version
+	index = *NewDynamicIndex(dc.namesapce, package_, version)
+
+	if dynamic, ok := dc.dynamics[index]; ok {
+		return dynamic.GetTunnel(), nil
+	}
+
+	if tunnel, err := tunnelCenter.GetTunnel(index.String()); err == nil {
+		dc.cache(package_, version, tunnel)
 		return tunnel, nil
 	}
+
+	// then try with default version
+	index = *NewDynamicIndex(dc.namesapce, package_, dc.defaultVersion)
+
+	if dynamic, ok := dc.dynamics[index]; ok {
+		dc.cache(package_, version, dynamic.GetTunnel())
+		return dynamic.GetTunnel(), nil
+	}
+
+	if tunnel, err := tunnelCenter.GetTunnel(index.String()); err == nil {
+		dc.cache(package_, version, tunnel)
+		dc.cache(package_, dc.defaultVersion, tunnel)
+		return tunnel, nil
+	}
+
+	return nil, ErrDynamicNotExits
 }
 
-func ClosePackage(pkg string, version string) {
-	muPkg.Lock()
-	defer muPkg.Unlock()
+func (dc *DynamicCenter) ClosePackage(package_ string, version string) {
+	dc.mu.Lock()
+	defer dc.mu.Unlock()
 
-	name := getPackageTunnelName(pkg, version)
-
-	if tunnel, ok := pkgMap[name]; ok {
-		if tunnel != nil {
-			tunnel.Close()
+	index := *NewDynamicIndex(dc.namesapce, package_, version)
+	if dynamic, ok := dc.dynamics[index]; ok {
+		if dynamic != nil {
+			dynamic.GetTunnel().Close()
 		}
-		delete(pkgMap, name)
+		delete(dc.dynamics, index)
 	}
 }
 
-func RegisterPackage(pkg string, version string, tunnel Tunnel) {
-	muPkg.Lock()
-	defer muPkg.Unlock()
+func (dc *DynamicCenter) RegisterPackage(package_ string, version string, tunnel Tunnel) {
+	dc.mu.Lock()
+	defer dc.mu.Unlock()
 
-	if !allowed.MatchString(pkg) || !allowed.MatchString(version) {
-		panic("invalid package name or version")
-	}
-
-	name := getPackageTunnelName(pkg, version)
-	pkgMap[name] = tunnel
-	RegisterTunnel(name, tunnel)
+	index := dc.cache(package_, version, tunnel)
+	tunnelCenter.RegisterTunnel(index.String(), tunnel)
 }
 
-func getPackageTunnelName(pkg string, version string) string {
-	return strings.Join([]string{namespace, pkg, version}, "_")
+func (dc *DynamicCenter) cache(package_ string, version string, tunnel Tunnel) DynamicIndex {
+	index := *NewDynamicIndex(dc.namesapce, package_, version)
+	dyanmic := NewDynamic(index, tunnel)
+	dc.dynamics[index] = dyanmic
+	return index
 }

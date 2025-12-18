@@ -1,0 +1,71 @@
+package dynamic
+
+import (
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"plugin"
+	"runtime"
+)
+
+var (
+	ErrUnexpectedSymbolNew = errors.New("dynamic: unexpected type from symbol New")
+)
+
+type Local struct {
+	localPath string
+}
+
+func NewLocal(localPath string) *Local {
+	if localPath == "" {
+		return nil
+	}
+
+	return &Local{localPath: localPath}
+}
+
+func (l Local) GetPath() string {
+	if l.localPath != "" {
+		return l.localPath
+	} else if runtime.GOOS == "windows" {
+		return "C:/warehouse"
+	} else {
+		return "/opt/warehouse"
+	}
+}
+
+func (l Local) Exists(name string) bool {
+	localCgoFilePath := filepath.Join(l.GetPath(), toolchain.String(), name, fmt.Sprintf("libcgo_%s.so", name))
+	localGoFilePath := filepath.Join(l.GetPath(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
+
+	if stat, err := os.Stat(localCgoFilePath); err != nil || stat.Size() == 0 {
+		return false
+	}
+
+	if stat, err := os.Stat(localGoFilePath); err != nil || stat.Size() == 0 {
+		return false
+	}
+
+	return true
+}
+
+func (l Local) PluginLoad(name string) (any, error) {
+	localGoFilePath := filepath.Join(l.GetPath(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
+	plug, err := plugin.Open(localGoFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	if symbol, err := plug.Lookup("Tunnel"); err == nil {
+		return symbol, nil
+	} else if symbol, err = plug.Lookup("New"); err == nil {
+		newFunc, ok := symbol.(func() any)
+		if !ok {
+			return nil, ErrUnexpectedSymbolNew
+		}
+		return newFunc(), nil
+	} else {
+		return nil, err
+	}
+}
