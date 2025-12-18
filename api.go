@@ -3,7 +3,7 @@ package dynamic
 import "log"
 
 func UseWarehouse(local, remote string) {
-	log.Printf("dynamic: UseWarehouse local_set=%t remote_set=%t", local != "", remote != "")
+	log.Printf("dynamic: UseWarehouse local_set=%q remote_set=%q", local, remote)
 	if !allowed.IsPath(local) {
 		panic("dynamic: invalid local warehouse path")
 	}
