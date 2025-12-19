@@ -22,8 +22,8 @@ func NewToolchain() *Toolchain {
 }
 
 func (t *Toolchain) Init() {
-	if BuildOS != "" {
-		t.OS = BuildOS
+	if DynamicOS != "" {
+		t.OS = DynamicOS
 	} else {
 		t.OS = os.Getenv("DYNAMIC_OS")
 	}
@@ -31,8 +31,8 @@ func (t *Toolchain) Init() {
 		t.OS = env.GetOS()
 	}
 
-	if BuildArch != "" {
-		t.Arch = BuildArch
+	if DynamicArch != "" {
+		t.Arch = DynamicArch
 	} else {
 		t.Arch = os.Getenv("DYNAMIC_ARCH")
 	}
@@ -40,8 +40,8 @@ func (t *Toolchain) Init() {
 		t.Arch = env.GetArch()
 	}
 
-	if BuileCompiler != "" {
-		t.Compiler = BuileCompiler
+	if DynamicCompiler != "" {
+		t.Compiler = DynamicCompiler
 	} else {
 		t.Compiler = os.Getenv("DYNAMIC_COMPILER")
 	}
@@ -49,8 +49,8 @@ func (t *Toolchain) Init() {
 		t.Compiler = env.GetCompiler()
 	}
 
-	if BuildVariant != "" {
-		t.Variant = BuildVariant
+	if DynamicVariant != "" {
+		t.Variant = DynamicVariant
 	} else {
 		t.Variant = os.Getenv("DYNAMIC_VARIANT")
 	}
