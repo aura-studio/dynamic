@@ -1,10 +1,18 @@
 package dynamic
 
+// UseWarehouse:
+//
+//	如果使用此函数，local一定要有值，而remote可以为空。
+//	local表示本地仓库路径，remote表示远程仓库URL。
+//	remote如果有值，则会启用远程仓库同步功能。
+//	Case 1: 不调用UseWarehouse函数，则不启用仓库功能，直走静态Package。
+//	Case 2: 只调用UseWarehouse(local, ""), 则启用本地仓库功能，不启用远程同步功能。
+//	Case 3: 调用UseWarehouse(local, remote), 则启用本地仓库功能，并启用远程同步功能。
 func UseWarehouse(local, remote string) {
 	if !allowed.IsPath(local) {
 		panic("dynamic: invalid local warehouse path")
 	}
-	if !allowed.IsURL(remote) {
+	if remote != "" && !allowed.IsURL(remote) {
 		panic("dynamic: invalid remote warehouse URL")
 	}
 	warehouse.Init(local, remote)
