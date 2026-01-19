@@ -51,36 +51,36 @@ func UseDefaultVersion(version string) {
 	packageCenter.UseDefaultVersion(version)
 }
 
-func RegisterPackage(packageName string, version string, tunnel Tunnel) {
-	if !allowed.IsKeyword(packageName) {
+func RegisterPackage(pkg string, version string, tunnel Tunnel) {
+	if !allowed.IsKeyword(pkg) {
 		panic("dynamic: invalid package name")
 	}
 	if !allowed.IsKeyword(version) {
 		panic("dynamic: invalid package version")
 	}
-	packageCenter.RegisterPackage(packageName, version, tunnel)
+	packageCenter.RegisterPackage(pkg, version, tunnel)
 }
 
-func GetPackage(packageName string, version string) (Tunnel, error) {
-	if !allowed.IsKeyword(packageName) {
+func GetPackage(pkg string, version string) (Tunnel, error) {
+	if !allowed.IsKeyword(pkg) {
 		panic("dynamic: invalid package name")
 	}
 	if !allowed.IsKeyword(version) {
 		panic("dynamic: invalid package version")
 	}
-	tunnel, err := packageCenter.GetTunnel(packageName, version)
+	tunnel, err := packageCenter.GetTunnel(pkg, version)
 	if err != nil {
 		return nil, err
 	}
 	return tunnel, nil
 }
 
-func ClosePackage(packageName string, version string) {
-	if !allowed.IsKeyword(packageName) {
+func ClosePackage(pkg string, version string) {
+	if !allowed.IsKeyword(pkg) {
 		panic("dynamic: invalid package name")
 	}
 	if !allowed.IsKeyword(version) {
 		panic("dynamic: invalid package version")
 	}
-	packageCenter.ClosePackage(packageName, version)
+	packageCenter.ClosePackage(pkg, version)
 }

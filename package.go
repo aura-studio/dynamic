@@ -71,46 +71,46 @@ func (dc *DynamicCenter) UseDefaultVersion(v string) {
 	dc.defaultVersion = v
 }
 
-func (dc *DynamicCenter) GetTunnel(package_ string, version string) (tunnel Tunnel, err error) {
+func (dc *DynamicCenter) GetTunnel(pkg string, version string) (tunnel Tunnel, err error) {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
 	var index DynamicIndex
 
 	// first try with provided version
-	index = *NewDynamicIndex(dc.namesapce, package_, version)
+	index = *NewDynamicIndex(dc.namesapce, pkg, version)
 
 	if dynamic, ok := dc.dynamics[index]; ok {
 		return dynamic.GetTunnel(), nil
 	}
 
 	if tunnel, err := tunnelCenter.GetTunnel(index.String()); err == nil {
-		dc.cache(package_, version, tunnel)
+		dc.cache(pkg, version, tunnel)
 		return tunnel, nil
 	}
 
 	// then try with default version
-	index = *NewDynamicIndex(dc.namesapce, package_, dc.defaultVersion)
+	index = *NewDynamicIndex(dc.namesapce, pkg, dc.defaultVersion)
 
 	if dynamic, ok := dc.dynamics[index]; ok {
-		dc.cache(package_, version, dynamic.GetTunnel())
+		dc.cache(pkg, version, dynamic.GetTunnel())
 		return dynamic.GetTunnel(), nil
 	}
 
 	if tunnel, err := tunnelCenter.GetTunnel(index.String()); err == nil {
-		dc.cache(package_, version, tunnel)
-		dc.cache(package_, dc.defaultVersion, tunnel)
+		dc.cache(pkg, version, tunnel)
+		dc.cache(pkg, dc.defaultVersion, tunnel)
 		return tunnel, nil
 	}
 
 	return nil, errors.New("dynamic: dynamic package not exits")
 }
 
-func (dc *DynamicCenter) ClosePackage(package_ string, version string) {
+func (dc *DynamicCenter) ClosePackage(pkg string, version string) {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
-	index := *NewDynamicIndex(dc.namesapce, package_, version)
+	index := *NewDynamicIndex(dc.namesapce, pkg, version)
 	if dynamic, ok := dc.dynamics[index]; ok {
 		if dynamic != nil {
 			dynamic.GetTunnel().Close()
@@ -119,16 +119,16 @@ func (dc *DynamicCenter) ClosePackage(package_ string, version string) {
 	}
 }
 
-func (dc *DynamicCenter) RegisterPackage(package_ string, version string, tunnel Tunnel) {
+func (dc *DynamicCenter) RegisterPackage(pkg string, version string, tunnel Tunnel) {
 	dc.mu.Lock()
 	defer dc.mu.Unlock()
 
-	index := dc.cache(package_, version, tunnel)
+	index := dc.cache(pkg, version, tunnel)
 	tunnelCenter.RegisterTunnel(index.String(), tunnel)
 }
 
-func (dc *DynamicCenter) cache(package_ string, version string, tunnel Tunnel) DynamicIndex {
-	index := *NewDynamicIndex(dc.namesapce, package_, version)
+func (dc *DynamicCenter) cache(pkg string, version string, tunnel Tunnel) DynamicIndex {
+	index := *NewDynamicIndex(dc.namesapce, pkg, version)
 	dyanmic := NewDynamic(index, tunnel)
 	dc.dynamics[index] = dyanmic
 	return index
