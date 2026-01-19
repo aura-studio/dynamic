@@ -18,10 +18,10 @@ type DynamicIndex struct {
 	Version   string
 }
 
-func NewDynamicIndex(namespace, package_, version string) *DynamicIndex {
+func NewDynamicIndex(namespace, pkg, version string) *DynamicIndex {
 	return &DynamicIndex{
 		Namespace: namespace,
-		Package:   package_,
+		Package:   pkg,
 		Version:   version,
 	}
 }
