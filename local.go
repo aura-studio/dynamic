@@ -3,6 +3,7 @@ package dynamic
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"plugin"
@@ -31,24 +32,20 @@ func (l Local) Exists(name string) bool {
 
 	// libgo is required.
 	if stat, err := os.Stat(localGoFilePath); err != nil {
-		if os.IsNotExist(err) {
-			return false
-		}
 		return false
 	} else if stat.Size() == 0 {
 		return false
 	}
 
-	// libcgo is optional: some builds may not produce it.
+	// libcgo is required.
 	if stat, err := os.Stat(localCgoFilePath); err != nil {
-		if os.IsNotExist(err) {
-			return true
-		}
 		return false
 	} else if stat.Size() == 0 {
 		return false
 	}
 
+	log.Printf("[dynamic] found warehouse package %s go file: %s", name, localGoFilePath)
+	log.Printf("[dynamic] found warehouse package %s cgo file: %s", name, localCgoFilePath)
 	return true
 }
 
