@@ -44,12 +44,12 @@ func (tc *TunnelCenter) GetTunnel(name string) (Tunnel, error) {
 		return tunnel, nil
 	}
 
-	plugin, err := warehouse.Load(name)
+	pkg, err := warehouse.Load(name)
 	if err != nil {
 		return nil, err
 	}
 
-	tunnel, ok := plugin.(Tunnel)
+	tunnel, ok := pkg.(Tunnel)
 	if !ok {
 		return nil, errors.New("dynamic: symbol is not a Tunnel")
 	}

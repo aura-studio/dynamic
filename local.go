@@ -52,7 +52,7 @@ func (l Local) Exists(name string) bool {
 	return true
 }
 
-func (l Local) PluginLoad(name string) (any, error) {
+func (l Local) Load(name string) (any, error) {
 	localGoFilePath := filepath.Join(l.Path(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
 	plug, err := plugin.Open(localGoFilePath)
 	if err != nil {
