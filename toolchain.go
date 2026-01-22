@@ -31,7 +31,7 @@ func (t *Toolchain) Init() {
 	if t.OS == "" {
 		t.OS = env.GetOS()
 	}
-	log.Printf("[dynamic] Toolchain OS: %s", t.OS)
+	log.Printf("[dynamic] toolchain os: %s", t.OS)
 
 	if DynamicArch != "" {
 		t.Arch = DynamicArch
@@ -41,7 +41,7 @@ func (t *Toolchain) Init() {
 	if t.Arch == "" {
 		t.Arch = env.GetArch()
 	}
-	log.Printf("[dynamic] Toolchain Arch: %s", t.Arch)
+	log.Printf("[dynamic] toolchain arch: %s", t.Arch)
 
 	if DynamicCompiler != "" {
 		t.Compiler = DynamicCompiler
@@ -51,7 +51,7 @@ func (t *Toolchain) Init() {
 	if t.Compiler == "" {
 		t.Compiler = env.GetCompiler()
 	}
-	log.Printf("[dynamic] Toolchain Compiler: %s", t.Compiler)
+	log.Printf("[dynamic] toolchain compiler: %s", t.Compiler)
 
 	if DynamicVariant != "" {
 		t.Variant = DynamicVariant
@@ -61,7 +61,7 @@ func (t *Toolchain) Init() {
 	if t.Variant == "" {
 		t.Variant = "generic" // 包含构建参数和so的路径都必须固定
 	}
-	log.Printf("[dynamic] Toolchain Variant: %s", t.Variant)
+	log.Printf("[dynamic] toolchain variant: %s", t.Variant)
 }
 
 func (t Toolchain) String() string {
