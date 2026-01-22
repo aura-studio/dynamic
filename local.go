@@ -26,18 +26,24 @@ func (l Local) Path() string {
 func (l Local) Exists(name string) bool {
 	localCgoFilePath := filepath.Join(l.Path(), toolchain.String(), name, fmt.Sprintf("libcgo_%s.so", name))
 	localGoFilePath := filepath.Join(l.Path(), toolchain.String(), name, fmt.Sprintf("libgo_%s.so", name))
+	log.Printf("[dynamic] check warehouse package %s go file: %s", name, localGoFilePath)
+	log.Printf("[dynamic] check warehouse package %s cgo file: %s", name, localCgoFilePath)
 
 	// libgo is required.
 	if stat, err := os.Stat(localGoFilePath); err != nil {
+		log.Printf("[dynamic] stat error: %v", err)
 		return false
 	} else if stat.Size() == 0 {
+		log.Printf("[dynamic] file size is zero: %s", localGoFilePath)
 		return false
 	}
 
 	// libcgo is required.
 	if stat, err := os.Stat(localCgoFilePath); err != nil {
+		log.Printf("[dynamic] stat error: %v", err)
 		return false
 	} else if stat.Size() == 0 {
+		log.Printf("[dynamic] file size is zero: %s", localCgoFilePath)
 		return false
 	}
 
