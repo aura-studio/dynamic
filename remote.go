@@ -35,14 +35,14 @@ func NewRemote(remotePath string) Remote {
 
 	u, err := url.Parse(remotePath)
 	if err != nil {
-		log.Panicf("parsing remote url error: %v", err)
+		log.Panicf("[dynamic] parsing remote url error: %v", err)
 	}
 
 	switch u.Scheme {
 	case "s3":
 		return NewS3Remote(u.Host)
 	default:
-		log.Panicf("unknown remote scheme: %s", u.Scheme)
+		log.Panicf("[dynamic] unknown remote scheme: %s", u.Scheme)
 	}
 
 	return nil
@@ -83,7 +83,7 @@ func (r *S3Remote) downloadFileFromS3(remoteFilePath string, localFilePath strin
 		Key:    aws.String(remoteFilePath),
 	})
 	if err != nil {
-		log.Printf("failed to get object, %v", err)
+		log.Printf("[dynamic] failed to get object, %v", err)
 		return ErrTunnelNotExits
 	}
 
@@ -121,38 +121,38 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 
 			if stat, err := os.Stat(localFilePath); err != nil {
 				if os.IsNotExist(err) {
-					log.Printf("%s not found, downloading from s3://%s...", localFilePath, filepath.Join(r.bucket, remoteFilePath))
+					log.Printf("[dynamic] %s not found, downloading from s3://%s...", localFilePath, filepath.Join(r.bucket, remoteFilePath))
 					if err := r.downloadFileFromS3(remoteFilePath, localFilePath); err != nil {
-						log.Printf("failed to download file from s3, %v", err)
+						log.Printf("[dynamic] failed to download file from s3, %v", err)
 						errChan <- err
 						return
 					}
 				} else {
-					log.Printf("failed to stat file, %v", err)
+					log.Printf("[dynamic] failed to stat file, %v", err)
 					errChan <- err
 					return
 				}
 			} else if stat.Size() == 0 {
-				log.Printf("%s is empty, downloading from s3://%s...", localFilePath, filepath.Join(r.bucket, remoteFilePath))
+				log.Printf("[dynamic] %s is empty, downloading from s3://%s...", localFilePath, filepath.Join(r.bucket, remoteFilePath))
 				if err := os.Remove(localFilePath); err != nil {
-					log.Printf("failed to remove file, %v", err)
+					log.Printf("[dynamic] failed to remove file, %v", err)
 					errChan <- err
 					return
 				}
 				if err := r.downloadFileFromS3(remoteFilePath, localFilePath); err != nil {
-					log.Printf("failed to download file from s3, %v", err)
+					log.Printf("[dynamic] failed to download file from s3, %v", err)
 					errChan <- err
 					return
 				}
 			} else {
-				log.Printf("%s is already exists", localFilePath)
+				log.Printf("[dynamic] %s is already exists", localFilePath)
 			}
 		}(file)
 	}
 	wg.Wait()
 
 	if len(errChan) > 0 {
-		log.Printf("%d errors occurred during downloading", len(errChan))
+		log.Printf("[dynamic] %d errors occurred during downloading", len(errChan))
 		for err := range errChan {
 			if isTunnelNotExist(err) {
 				return ErrTunnelNotExits
@@ -184,7 +184,7 @@ func (r *S3Remote) Sync(name string) error {
 		}
 		return fmt.Errorf("failed to download files from s3, %w", err)
 	}
-	log.Printf("download files from s3 took %v", time.Since(startTime))
+	log.Printf("[dynamic] download files from s3 took %v", time.Since(startTime))
 
 	return nil
 }
