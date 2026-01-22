@@ -31,19 +31,15 @@ func (l Local) Exists(name string) bool {
 
 	// libgo is required.
 	if stat, err := os.Stat(localGoFilePath); err != nil {
-		log.Printf("[dynamic] stat error: %v", err)
 		return false
 	} else if stat.Size() == 0 {
-		log.Printf("[dynamic] file size is zero: %s", localGoFilePath)
 		return false
 	}
 
 	// libcgo is required.
 	if stat, err := os.Stat(localCgoFilePath); err != nil {
-		log.Printf("[dynamic] stat error: %v", err)
 		return false
 	} else if stat.Size() == 0 {
-		log.Printf("[dynamic] file size is zero: %s", localCgoFilePath)
 		return false
 	}
 

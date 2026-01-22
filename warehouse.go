@@ -22,7 +22,7 @@ func (w *Warehouse) Init(localPath, remotePath string) {
 }
 
 func (w *Warehouse) Load(name string) (any, error) {
-	log.Printf("[dynamic] warehouse loading package: %s", name)
+	log.Printf("[dynamic] load warehouse package %s...", name)
 
 	if w.Local == nil {
 		return nil, errors.New("dynamic: warehouse package not exists")
@@ -44,10 +44,10 @@ func (w *Warehouse) Load(name string) (any, error) {
 
 	pkg, err := w.Local.Load(name)
 	if err != nil {
-		log.Printf("[dynamic] warehouse load package %s failed: %v", name, err)
+		log.Printf("[dynamic] load warehouse package %s failed: %v", name, err)
 		return nil, err
 	}
 
-	log.Printf("[dynamic] warehouse load package: %s success", name)
+	log.Printf("[dynamic] load warehouse load package %s success", name)
 	return pkg, nil
 }
