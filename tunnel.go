@@ -11,8 +11,7 @@ type Tunnel interface {
 	Close()
 }
 
-type Template struct {
-}
+type Template struct{}
 
 func (t *Template) Init() {
 }

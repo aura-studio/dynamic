@@ -1,5 +1,7 @@
 package dynamic
 
+import "log"
+
 // UseWarehouse:
 //
 //	如果使用此函数，local一定要有值，而remote可以为空。
@@ -17,23 +19,31 @@ func UseWarehouse(local, remote string) {
 	// Case 2:
 	if local != "" && remote == "" {
 		if !allowed.IsPath(local) {
+			log.Printf("[dynamic] invalid local warehouse path: %s", local)
 			panic("dynamic: invalid local warehouse path")
 		}
 		warehouse.Init(local, "")
+		log.Printf("[dynamic] use local warehouse: %s", local)
 		return
 	}
 
 	// Case 3:
 	if local != "" && remote != "" {
 		if !allowed.IsPath(local) {
+			log.Printf("[dynamic] invalid local warehouse path: %s", local)
 			panic("dynamic: invalid local warehouse path")
 		}
 		if !allowed.IsURL(remote) {
+			log.Printf("[dynamic] invalid remote warehouse URL: %s", remote)
 			panic("dynamic: invalid remote warehouse URL")
 		}
 		warehouse.Init(local, remote)
+		log.Printf("[dynamic] use local warehouse: %s", local)
+		log.Printf("[dynamic] use remote warehouse: %s", remote)
+		return
 	}
 
+	log.Printf("[dynamic] invalid warehouse configuration: local=%s, remote=%s", local, remote)
 	panic("dynamic: invalid warehouse configuration")
 }
 

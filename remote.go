@@ -17,9 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-var (
-	ErrTunnelNotExits = errors.New("dynamic: tunnel not exits")
-)
+var ErrTunnelNotExits = errors.New("dynamic: tunnel not exits")
 
 func isTunnelNotExist(err error) bool {
 	return errors.Is(err, ErrTunnelNotExits)
@@ -84,7 +82,6 @@ func (r *S3Remote) downloadFileFromS3(remoteFilePath string, localFilePath strin
 		Bucket: aws.String(r.bucket),
 		Key:    aws.String(remoteFilePath),
 	})
-
 	if err != nil {
 		log.Printf("failed to get object, %v", err)
 		return ErrTunnelNotExits
@@ -113,7 +110,7 @@ func (r *S3Remote) batchDownloadFilesFromS3(name string) error {
 	}
 
 	var wg sync.WaitGroup
-	var errChan = make(chan error, len(files))
+	errChan := make(chan error, len(files))
 	for _, file := range files {
 		wg.Add(1)
 		go func(file string) {
