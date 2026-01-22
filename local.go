@@ -14,9 +14,6 @@ type Local struct {
 }
 
 func NewLocal(localPath string) *Local {
-	if toolchain.Variant == "generic" {
-		localPath = "/opt/warehouse"
-	}
 	return &Local{
 		localPath: localPath,
 	}
