@@ -3,13 +3,11 @@ package dynamic
 import (
 	"log"
 	"os"
+	"sync"
 )
 
-func init() {
-	toolchain.Init()
-}
-
 type Toolchain struct {
+	sync.Once
 	OS       string
 	Arch     string
 	Compiler string
@@ -22,48 +20,51 @@ func NewToolchain() *Toolchain {
 	return &Toolchain{}
 }
 
-func (t *Toolchain) Init() {
-	if DynamicOS != "" {
-		t.OS = DynamicOS
-	} else {
-		t.OS = os.Getenv("DYNAMIC_OS")
-	}
-	if t.OS == "" {
-		t.OS = env.GetOS()
-	}
-	log.Printf("[dynamic] toolchain os: %s", t.OS)
+func (t *Toolchain) init() {
+	t.Do(func() {
+		if DynamicOS != "" {
+			t.OS = DynamicOS
+		} else {
+			t.OS = os.Getenv("DYNAMIC_OS")
+		}
+		if t.OS == "" {
+			t.OS = env.GetOS()
+		}
+		log.Printf("[dynamic] toolchain os: %s", t.OS)
 
-	if DynamicArch != "" {
-		t.Arch = DynamicArch
-	} else {
-		t.Arch = os.Getenv("DYNAMIC_ARCH")
-	}
-	if t.Arch == "" {
-		t.Arch = env.GetArch()
-	}
-	log.Printf("[dynamic] toolchain arch: %s", t.Arch)
+		if DynamicArch != "" {
+			t.Arch = DynamicArch
+		} else {
+			t.Arch = os.Getenv("DYNAMIC_ARCH")
+		}
+		if t.Arch == "" {
+			t.Arch = env.GetArch()
+		}
+		log.Printf("[dynamic] toolchain arch: %s", t.Arch)
 
-	if DynamicCompiler != "" {
-		t.Compiler = DynamicCompiler
-	} else {
-		t.Compiler = os.Getenv("DYNAMIC_COMPILER")
-	}
-	if t.Compiler == "" {
-		t.Compiler = env.GetCompiler()
-	}
-	log.Printf("[dynamic] toolchain compiler: %s", t.Compiler)
+		if DynamicCompiler != "" {
+			t.Compiler = DynamicCompiler
+		} else {
+			t.Compiler = os.Getenv("DYNAMIC_COMPILER")
+		}
+		if t.Compiler == "" {
+			t.Compiler = env.GetCompiler()
+		}
+		log.Printf("[dynamic] toolchain compiler: %s", t.Compiler)
 
-	if DynamicVariant != "" {
-		t.Variant = DynamicVariant
-	} else {
-		t.Variant = os.Getenv("DYNAMIC_VARIANT")
-	}
-	if t.Variant == "" {
-		t.Variant = "generic" // 包含构建参数和so的路径都必须固定
-	}
-	log.Printf("[dynamic] toolchain variant: %s", t.Variant)
+		if DynamicVariant != "" {
+			t.Variant = DynamicVariant
+		} else {
+			t.Variant = os.Getenv("DYNAMIC_VARIANT")
+		}
+		if t.Variant == "" {
+			t.Variant = "generic" // 包含构建参数和so的路径都必须固定
+		}
+		log.Printf("[dynamic] toolchain variant: %s", t.Variant)
+	})
 }
 
-func (t Toolchain) String() string {
+func (t *Toolchain) String() string {
+	t.init()
 	return t.OS + "_" + t.Arch + "_" + t.Compiler + "_" + t.Variant
 }
