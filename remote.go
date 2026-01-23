@@ -100,6 +100,12 @@ func (r *S3Remote) downloadFileFromS3(remoteFilePath string, localFilePath strin
 		return fmt.Errorf("wrote a different size than was given to us")
 	}
 
+	// Ensure the downloaded .so file has execution permissions.
+	// plugin.Open requires the file to be readable and sometimes executable depending on the OS/Filesystem.
+	if err := os.Chmod(localFilePath, 0755); err != nil {
+		return fmt.Errorf("failed to chmod file %q, %w", localFilePath, err)
+	}
+
 	return nil
 }
 
