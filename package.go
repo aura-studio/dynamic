@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strings"
 	"sync"
+
+	"github.com/aura-studio/nano/log"
 )
 
 const (
@@ -87,6 +89,8 @@ func (dc *DynamicCenter) GetTunnel(pkg string, version string) (tunnel Tunnel, e
 	if tunnel, err := tunnelCenter.GetTunnel(index.String()); err == nil {
 		dc.cache(pkg, version, tunnel)
 		return tunnel, nil
+	} else {
+		log.Printf("[dynamic] get tunnel %s failed: %v", index.String(), err)
 	}
 
 	// then try with default version
@@ -101,9 +105,11 @@ func (dc *DynamicCenter) GetTunnel(pkg string, version string) (tunnel Tunnel, e
 		dc.cache(pkg, version, tunnel)
 		dc.cache(pkg, dc.defaultVersion, tunnel)
 		return tunnel, nil
+	} else {
+		log.Printf("[dynamic] get tunnel %s failed: %v", index.String(), err)
 	}
 
-	return nil, errors.New("dynamic: dynamic package not exits")
+	return nil, errors.New("dynamic: both provided version and default version not found")
 }
 
 func (dc *DynamicCenter) ClosePackage(pkg string, version string) {
