@@ -6,6 +6,7 @@ import (
 )
 
 type Tunnel interface {
+	Meta() string
 	Init()
 	Invoke(string, string) string
 	Close()
@@ -20,6 +21,10 @@ func (t *Template) Close() {
 }
 
 func (t *Template) Invoke(name string, args string) string {
+	return ""
+}
+
+func (t *Template) Meta() string {
 	return ""
 }
 
