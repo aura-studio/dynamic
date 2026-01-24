@@ -2,10 +2,9 @@ package dynamic
 
 import (
 	"errors"
+	"log"
 	"strings"
 	"sync"
-
-	"github.com/aura-studio/nano/log"
 )
 
 const (
