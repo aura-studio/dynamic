@@ -17,6 +17,7 @@ func NewWarehouse() *Warehouse {
 }
 
 func (w *Warehouse) Init(localPath, remotePath string) {
+	toolchain.init()
 	w.Local = NewLocal(localPath)
 	w.Remote = NewRemote(remotePath)
 }
