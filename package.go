@@ -1,7 +1,7 @@
 package dynamic
 
 import (
-	"errors"
+	"fmt"
 	"log"
 	"strings"
 	"sync"
@@ -108,7 +108,9 @@ func (dc *DynamicCenter) GetTunnel(pkg string, version string) (tunnel Tunnel, e
 		log.Printf("[dynamic] get tunnel %s failed: %v", index.String(), err)
 	}
 
-	return nil, errors.New("dynamic: both provided version and default version not found")
+	log.Printf("dynamic: both provided version and default version not found, package: %s, provided version: %s, default version: %s", pkg, version, dc.defaultVersion)
+
+	return nil, fmt.Errorf("dynamic: both provided version and default version not found, package: %s, provided version: %s, default version: %s", pkg, version, dc.defaultVersion)
 }
 
 func (dc *DynamicCenter) ClosePackage(pkg string, version string) {
